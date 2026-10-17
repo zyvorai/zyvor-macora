@@ -1,9 +1,5 @@
 use std::{collections::BTreeMap, process::Command};
-use zyvor_macora::{
-    export, parse,
-    probe::{self, Status, Step},
-    tui,
-};
+use zyvor_macora::{export, parse, probe, tui};
 const MAC: &str = include_str!("fixtures/macos.ifconfig");
 
 fn run(args: &[&str]) -> std::process::Output {
@@ -15,14 +11,6 @@ fn run(args: &[&str]) -> std::process::Output {
 fn fixture() -> &'static str {
     concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/macos.ifconfig")
 }
-fn step(name: &'static str, status: Status) -> Step {
-    Step {
-        name,
-        status,
-        detail: String::new(),
-    }
-}
-
 #[test]
 fn ping_parses_macos_linux_and_total_loss() {
     let m = probe::parse_ping(include_str!("fixtures/ping-macos.txt")).unwrap();
@@ -49,36 +37,6 @@ fn hosts_reject_shell_and_option_injection() {
     }
     assert!(!run(&["ping", "a;b"]).status.success());
     assert!(!run(&["trace", "-x"]).status.success());
-}
-
-#[test]
-fn verdict_blames_the_lowest_failing_layer() {
-    let v = |s: &[Step]| probe::verdict(s);
-    assert!(
-        v(&[step("Link", Status::Fail), step("Gateway", Status::Skip)])
-            .contains("local connection")
-    );
-    assert!(v(&[step("Link", Status::Ok), step("Gateway", Status::Fail)]).contains("router"));
-    assert!(
-        v(&[step("Gateway", Status::Ok), step("Internet", Status::Fail)])
-            .contains("internet does not")
-    );
-    assert!(
-        v(&[step("Internet", Status::Ok), step("DNS", Status::Fail)])
-            .contains("names do not resolve")
-    );
-    assert!(v(&[step("Gateway", Status::Warn)]).contains("packet loss"));
-    assert!(v(&[step("MTU", Status::Warn)]).contains("MTU"));
-    assert!(v(&[step("Link", Status::Ok), step("DNS", Status::Ok)]).contains("No problem found"));
-    // The lowest layer wins even when higher layers also fail.
-    assert!(v(&[step("DNS", Status::Fail), step("Gateway", Status::Fail)]).contains("router"));
-}
-
-#[test]
-fn diagnose_json_is_structured() {
-    let j = probe::steps_json(&[step("Link", Status::Ok)]);
-    assert!(j.starts_with("{\"steps\":[{\"step\":\"Link\",\"status\":\"OK\""));
-    assert!(j.contains("\"verdict\":"));
 }
 
 #[test]

@@ -1,0 +1,9 @@
+{
+  "base_rtt" : 67.77753448486328,
+  "dl_flows" : 7,
+  "dl_throughput" : 94915080,
+  "interface_name" : "en0",
+  "responsiveness" : 228.2864990234375,
+  "ul_flows" : 10,
+  "ul_throughput" : 107178248
+}

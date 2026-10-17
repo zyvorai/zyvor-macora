@@ -55,6 +55,10 @@ pub const WORDS: &[&str] = &[
     "format",
     "theme",
     "color",
+    "speed",
+    "quick",
+    "strict",
+    "to",
 ];
 pub const FORMATS: &[&str] = &["table", "json", "ndjson", "md", "html", "prometheus"];
 pub const THEMES: &[&str] = &["default", "mono", "high-contrast"];

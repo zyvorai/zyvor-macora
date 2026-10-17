@@ -1,0 +1,29 @@
+{
+  "SPAirPortDataType" : [
+    {
+      "spairport_airport_interfaces" : [
+        {
+          "_name" : "en0",
+          "spairport_status_information" : "spairport_status_connected",
+          "spairport_current_network_information" : {
+            "_name" : "ExampleNet",
+            "spairport_network_channel" : "40 (5GHz, 80MHz)",
+            "spairport_network_country_code" : "ZZ",
+            "spairport_network_mcs" : 7,
+            "spairport_network_phymode" : "802.11ax",
+            "spairport_network_rate" : 360,
+            "spairport_network_type" : "spairport_network_type_station",
+            "spairport_security_mode" : "spairport_security_mode_wpa2_personal",
+            "spairport_signal_noise" : "-66 dBm / -94 dBm"
+          },
+          "spairport_supported_channels" : [ "1", "6", "36", "40" ]
+        },
+        {
+          "_name" : "awdl0",
+          "spairport_status_information" : "spairport_status_connected"
+        }
+      ],
+      "spairport_software_information" : "Version 27.2"
+    }
+  ]
+}

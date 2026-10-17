@@ -1,5 +1,5 @@
 use crate::{
-    collect, export, insight,
+    collect, diagnose, export, insight,
     model::{json_string, Snapshot},
     parse, probe,
     view::{self, Filter, Theme},
@@ -37,7 +37,8 @@ COMMANDS
   neighbors             ARP and IPv6 neighbor tables
   sockets               TCP/UDP sockets visible to your user
   doctor                Local interface findings (no external probes)
-  diagnose              Why is my network slow? Gateway, internet, DNS and MTU checks
+  diagnose              Why is my network slow? Link, router, internet, sign-in page, DNS, HTTPS,
+                        path MTU, Wi-Fi and IPv6, with a verdict and what to try
   ping HOST             Packet loss and latency (count N, default 4)
   trace HOST            Hop-by-hop path via traceroute
   watch                 Live counters and traffic rates; Ctrl-C to stop
@@ -67,6 +68,11 @@ WORDS  (after a command or interface)
   theme NAME            tui palette: default, mono, high-contrast
   color MODE            auto (default), always, never; NO_COLOR is honored
   apply                 Execute a previewed set command; requires privileges
+  to HOST               diagnose: also check one site (DNS, HTTPS timing, path)
+  quick                 diagnose: ~2 s check without Wi-Fi details and the MTU search
+  speed                 diagnose: also run Apple's networkQuality (~15 s, uses bandwidth)
+  strict                diagnose: exit 1 on warnings too (default: only on failures)
+  count N interval S    diagnose: repeat N times and summarize what flapped
 
 Use the SwiftUI app for DNS, proxy, DHCP/static IP, Wi-Fi and service management.
 Live collection and configuration require macOS. No telemetry, no background server.
@@ -91,6 +97,14 @@ pub struct Args {
     pub down: bool,
     /// Print the original ifconfig text instead of the explained view.
     pub raw: bool,
+    /// `diagnose to HOST`: also check one site.
+    pub to: Option<String>,
+    /// `diagnose speed`: run Apple's networkQuality (opt-in; it uses real bandwidth).
+    pub speed: bool,
+    /// `diagnose strict`: exit 1 on warnings too.
+    pub strict: bool,
+    /// `diagnose quick`: skip Wi-Fi details and the path-MTU search.
+    pub quick: bool,
 }
 impl Args {
     fn up_and_down(&self) -> bool {
@@ -108,6 +122,9 @@ const FLAG_WORDS: &[(&str, &str)] = &[
     ("apply", "--apply"),
     ("raw", "--raw"),
     ("list", "--list"),
+    ("speed", "--speed"),
+    ("quick", "--quick"),
+    ("strict", "--strict"),
     ("ipv4", "--ipv4"),
     ("ipv6", "--ipv6"),
 ];
@@ -124,6 +141,7 @@ const VALUE_WORDS: &[(&str, &str)] = &[
     ("format", "--format"),
     ("theme", "--theme"),
     ("color", "--color"),
+    ("to", "--to"),
 ];
 const VALUE_FLAGS: &[&str] = &[
     "--from",
@@ -135,6 +153,7 @@ const VALUE_FLAGS: &[&str] = &[
     "--format",
     "--theme",
     "--color",
+    "--to",
 ];
 fn flag_word(t: &str) -> Option<&'static str> {
     FLAG_WORDS.iter().find(|(w, _)| *w == t).map(|(_, f)| *f)
@@ -289,6 +308,10 @@ pub fn arguments(args: Vec<String>) -> Result<Args, String> {
             "--redact" => out.redact = true,
             "--apply" => out.apply = true,
             "--raw" => out.raw = true,
+            "--speed" => out.speed = true,
+            "--strict" => out.strict = true,
+            "--quick" => out.quick = true,
+            "--to" => out.to = Some(value(&mut args)?),
             "--list" => out.list = true,
             "--down" => out.down = true,
             "--ipv4" | "--ipv6" => {
@@ -502,7 +525,7 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     };
     if let Some(f) = a.format.as_deref() {
         let ok = match f {
-            "md" | "html" => cmd == "report",
+            "md" | "html" => cmd == "report" || cmd == "diagnose",
             "prometheus" => cmd == "watch" || cmd == "show",
             _ => true,
         };
@@ -519,10 +542,16 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     if a.theme.is_some() && cmd != "tui" {
         return Err("--theme only applies to tui".into());
     }
-    if ["diagnose", "ping", "trace"].contains(&cmd) && (a.from.is_some() || a.redact) {
+    if ["diagnose", "ping", "trace"].contains(&cmd) && a.from.is_some() {
+        return Err(format!("{cmd} is a live check; from FILE is not supported"));
+    }
+    if ["ping", "trace"].contains(&cmd) && a.redact {
         return Err(format!(
-            "{cmd} is a live check; --from and --redact are not supported"
+            "{cmd} output has nothing to redact; use redact with diagnose"
         ));
+    }
+    if (a.speed || a.strict || a.quick || a.to.is_some()) && cmd != "diagnose" {
+        return Err("speed, quick, strict and to HOST apply to diagnose".into());
     }
     if a.apply && cmd != "set" {
         return Err("--apply is only valid with set".into());
@@ -536,6 +565,7 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
             "watch",
             "report",
             "topology",
+            "diagnose",
             "interactive",
             "repl",
             "tui",
@@ -674,39 +704,7 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                 view::safe(out.trim_end())
             })
         }
-        "diagnose" => {
-            if !cfg!(target_os = "macos") {
-                return Err("diagnose requires macOS".into());
-            }
-            let steps = probe::diagnose(&collect::snapshot()?);
-            emit(&if a.json {
-                probe::steps_json(&steps)
-            } else {
-                steps
-                    .iter()
-                    .map(|s| {
-                        let code = match s.status {
-                            probe::Status::Ok => "92",
-                            probe::Status::Warn => "93",
-                            probe::Status::Fail => "91",
-                            probe::Status::Skip => "90",
-                        };
-                        format!(
-                            "{} {:<9} {}",
-                            t.paint(code, &format!("{:<5}", s.status.label())),
-                            s.name,
-                            view::safe(&s.detail)
-                        )
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n")
-                    + &format!("\n\n{}  {}", t.title("VERDICT"), probe::verdict(&steps))
-            })?;
-            if steps.iter().any(|s| s.status == probe::Status::Fail) {
-                return Err("Diagnosis found a failing layer".into());
-            }
-            Ok(())
-        }
+        "diagnose" => diagnose_command(&a, &t),
         "help" => emit(HELP),
         "version" => emit(concat!("macora ", env!("CARGO_PKG_VERSION"))),
         "show" => {
@@ -950,4 +948,163 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
         }
         _ => Err(format!("Unknown command {cmd}; use --help")),
     }
+}
+
+fn diagnose_command(a: &Args, t: &Theme) -> Result<(), String> {
+    if let Some(h) = &a.to {
+        if !probe::valid_host(h) || h.contains('%') || h.contains(':') {
+            return Err("Use a hostname after `to`, like: macora diagnose to github.com".into());
+        }
+    }
+    if !cfg!(target_os = "macos") {
+        return Err("diagnose requires macOS".into());
+    }
+    let opts = diagnose::Options {
+        speed: a.speed,
+        quick: a.quick,
+        target: a.to.clone(),
+    };
+    let rounds = a.count.unwrap_or(1).min(60);
+    let pause = a.interval.unwrap_or(5.0);
+    let mut worst = diagnose::Status::Ok;
+    let mut history: Vec<diagnose::Report> = Vec::new();
+    for round in 0..rounds {
+        let report = diagnose::run(&collect::snapshot()?, &opts);
+        let show = |text: String| -> String {
+            if a.redact {
+                diagnose::render::redact(text, &report.secrets)
+            } else {
+                text
+            }
+        };
+        if rounds == 1 {
+            let text = match a.format.as_deref() {
+                _ if a.json => diagnose::render::json(&report),
+                Some("md") => diagnose::render::markdown(&report),
+                Some("html") => diagnose::render::html(&report),
+                _ => diagnose::render::text(&report, t),
+            };
+            emit(&show(text))?;
+        } else if a.json {
+            emit(&show(diagnose::render::json(&report)))?;
+        } else {
+            emit(&show(round_line(round + 1, rounds, &report, t)))?;
+        }
+        worst = match (worst, report.worst()) {
+            (diagnose::Status::Fail, _) | (_, diagnose::Status::Fail) => diagnose::Status::Fail,
+            (diagnose::Status::Warn, _) | (_, diagnose::Status::Warn) => diagnose::Status::Warn,
+            _ => diagnose::Status::Ok,
+        };
+        history.push(report);
+        if round + 1 < rounds {
+            std::thread::sleep(Duration::from_secs_f64(pause));
+        }
+    }
+    if rounds > 1 && !a.json {
+        let secrets = history
+            .last()
+            .map(|r| r.secrets.clone())
+            .unwrap_or_default();
+        let summary = repeat_summary(&history);
+        emit(&if a.redact {
+            diagnose::render::redact(summary, &secrets)
+        } else {
+            summary
+        })?;
+    }
+    match worst {
+        diagnose::Status::Fail => Err("Diagnosis found a failing layer".into()),
+        diagnose::Status::Warn if a.strict => Err("Diagnosis found a warning (strict)".into()),
+        _ => Ok(()),
+    }
+}
+
+/// One compact line per round when `diagnose count N` repeats the check.
+fn round_line(n: u32, of: u32, r: &diagnose::Report, t: &Theme) -> String {
+    let (label, code) = match r.worst() {
+        diagnose::Status::Fail => ("FAIL", "1;38;5;196"),
+        diagnose::Status::Warn => ("WARN", "1;38;5;208"),
+        _ => ("OK  ", "1;38;5;46"),
+    };
+    let bad: Vec<String> = r
+        .steps
+        .iter()
+        .filter(|s| matches!(s.status, diagnose::Status::Fail | diagnose::Status::Warn))
+        .map(|s| format!("{} {}", s.name, s.status.label()))
+        .collect();
+    let lat = |name: &str| {
+        r.steps
+            .iter()
+            .find(|s| s.name == name)
+            .and_then(|s| s.ms)
+            .map_or(String::new(), |m| format!("{name} {m:.0} ms"))
+    };
+    let detail = if bad.is_empty() {
+        [lat("Gateway"), lat("Internet"), lat("DNS")]
+            .into_iter()
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(" · ")
+    } else {
+        bad.join(" · ")
+    };
+    format!(
+        "[{n}/{of}] {}  {}",
+        t.paint(code, label),
+        view::safe(&detail)
+    )
+}
+
+/// After a repeated run: which layers were unsteady, and the latency range.
+pub fn repeat_summary(history: &[diagnose::Report]) -> String {
+    let rounds = history.len();
+    let clean = history
+        .iter()
+        .filter(|r| r.worst() == diagnose::Status::Ok)
+        .count();
+    let mut out = format!(
+        "\n{rounds} rounds: {clean} clean, {} with problems.",
+        rounds - clean
+    );
+    let mut names: Vec<&'static str> = Vec::new();
+    for r in history {
+        for s in &r.steps {
+            if !names.contains(&s.name) {
+                names.push(s.name);
+            }
+        }
+    }
+    let mut unsteady: Vec<String> = Vec::new();
+    for name in &names {
+        let bad = history
+            .iter()
+            .filter(|r| {
+                r.steps.iter().any(|s| {
+                    s.name == *name
+                        && matches!(s.status, diagnose::Status::Fail | diagnose::Status::Warn)
+                })
+            })
+            .count();
+        if bad > 0 {
+            unsteady.push(format!("{name} ({bad} of {rounds})"));
+        }
+    }
+    if unsteady.is_empty() {
+        out += "\nNothing flapped.";
+    } else {
+        out += &format!("\nUnsteady: {}.", unsteady.join(", "));
+    }
+    for name in ["Gateway", "Internet", "DNS"] {
+        let v: Vec<f64> = history
+            .iter()
+            .filter_map(|r| r.steps.iter().find(|s| s.name == name).and_then(|s| s.ms))
+            .collect();
+        if v.len() > 1 {
+            let lo = v.iter().cloned().fold(f64::MAX, f64::min);
+            let hi = v.iter().cloned().fold(0.0, f64::max);
+            let avg = v.iter().sum::<f64>() / v.len() as f64;
+            out += &format!("\n{name}: min {lo:.0} / avg {avg:.0} / max {hi:.0} ms");
+        }
+    }
+    out
 }

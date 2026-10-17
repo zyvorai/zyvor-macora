@@ -1,0 +1,21 @@
+{
+  "SPAirPortDataType" : [
+    {
+      "spairport_airport_interfaces" : [
+        {
+          "_name" : "en0",
+          "spairport_status_information" : "spairport_status_connected",
+          "spairport_current_network_information" : {
+            "_name" : "ExampleNet"
+          },
+          "spairport_supported_channels" : [ "1", "6", "36", "40" ]
+        },
+        {
+          "_name" : "awdl0",
+          "spairport_status_information" : "spairport_status_connected"
+        }
+      ],
+      "spairport_software_information" : "Version 27.2"
+    }
+  ]
+}

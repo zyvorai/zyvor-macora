@@ -1,0 +1,6 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 14232
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+
+;; Query time: 31 msec
+;; SERVER: 192.0.2.1#53(192.0.2.1)

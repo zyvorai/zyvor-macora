@@ -1,0 +1,9 @@
+<dictionary> {
+  ExcludeSimpleHostnames : 0
+  FTPPassive : 1
+  __SCOPED__ : <dictionary> {
+    en0 : <dictionary> {
+      ExcludeSimpleHostnames : 0
+    }
+  }
+}
