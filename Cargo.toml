@@ -1,0 +1,21 @@
+[package]
+name = "zyvor-macora"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.74"
+description = "A colorful, explainable network cockpit for macOS"
+license = "Apache-2.0"
+authors = ["Zyvor AI Labs"]
+repository = "https://github.com/zyvorai/zyvor-macora"
+readme = "README.md"
+keywords = ["network", "cli", "ifconfig", "macos", "diagnostics"]
+categories = ["command-line-utilities", "network-programming"]
+
+[[bin]]
+name = "macora"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

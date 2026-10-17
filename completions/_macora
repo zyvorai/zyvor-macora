@@ -1,0 +1,11 @@
+#compdef macora
+_arguments -s \
+  '1:command:(interactive repl tui topology report resolve show explain routes path dns services wifi neighbors sockets doctor watch snapshot diff subnet probe set)' \
+  '--all[Expand every group]' '--up[Only administratively up interfaces]' \
+  '--json[JSON output]' '--redact[Mask IP and MAC values]' '--compact[Compact interface cards]' \
+  '--from[Saved ifconfig capture]:capture:_files' '--interface[Interface name]:interface:' \
+  '--group[Interface group]:group:(Network Bridges Virtual Tunnels System Loopback)' \
+  '--ipv4[Only IPv4 addresses]' '--ipv6[Only IPv6 addresses]' \
+  '--color[Color policy]:mode:(auto always never)' '--count[Watch frames]:count:' \
+  '--interval[Watch seconds]:seconds:' '--timeout-ms[TCP probe timeout]:milliseconds:' \
+  '--apply[Execute a set plan]' '--help[Show help]' '--version[Show version]' '*:argument:_files'

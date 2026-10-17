@@ -1,0 +1,48 @@
+name: macOS verification
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  rust:
+    strategy:
+      matrix:
+        os: [macos-14, macos-15, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --offline --locked -- -D warnings
+      - run: cargo test --offline --locked
+      - run: python3 scripts/check-contract.py
+      - run: python3 scripts/test-tui-pty.py
+      - run: cargo build --release --offline --locked
+  native-app:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build and test native application
+        run: ./scripts/build-macos.sh
+      - name: Inspect live macOS interface JSON
+        run: ./target/release/macora --json --all | python3 -m json.tool
+      - name: Read-only native diagnostics
+        run: ./target/release/macora doctor
+      - name: Preserve app bundle permissions
+        run: ditto -c -k --sequesterRsrc --keepParent dist/Macora.app dist/Macora-macOS.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Macora-macOS-build
+          path: dist/Macora-macOS.zip
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.74'
+      - run: cargo test --offline --locked
