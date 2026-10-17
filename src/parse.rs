@@ -36,7 +36,11 @@ pub fn ifconfig(text: &str) -> Result<Snapshot, String> {
         }
         if !line.starts_with(char::is_whitespace) && line.contains(": flags=") {
             if let Some(i) = current.take() {
-                snapshot.interfaces.push(i);
+                {
+                    let mut i = i;
+                    i.order = snapshot.interfaces.len();
+                    snapshot.interfaces.push(i);
+                }
             }
             let name = line.split(':').next().unwrap_or("").to_string();
             if name.is_empty() || name.chars().any(char::is_control) {
@@ -113,7 +117,11 @@ pub fn ifconfig(text: &str) -> Result<Snapshot, String> {
         }
     }
     if let Some(i) = current {
-        snapshot.interfaces.push(i);
+        {
+            let mut i = i;
+            i.order = snapshot.interfaces.len();
+            snapshot.interfaces.push(i);
+        }
     }
     if snapshot.interfaces.is_empty() {
         return Err("No interface records found; expected macOS `ifconfig -a` output".into());

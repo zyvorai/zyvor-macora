@@ -26,10 +26,10 @@
 | --- | --- |
 | `ifconfig` prints a wall of 17 interfaces and you only care about Wi-Fi | Interfaces **grouped** (Network, Bridges, Tunnels, System, Loopback) with each flag, scoped IPv6 address and bridge member explained |
 | "The internet is slow" and you do not know where to look | **`macora diagnose`**: link → router → internet → DNS → MTU, stopping at the first real problem, in plain language |
-| You need to send someone your network details | **`--redact`** masks IPs and MACs; export Markdown, HTML or JSON; snapshots are private (0600) and never overwritten |
+| You need to send someone your network details | **`redact`** masks IPs and MACs; export Markdown, HTML or JSON; snapshots are private (0600) and never overwritten |
 | "What changed since it last worked?" | Capture a baseline, then **diff** field by field, in the app or `macora diff` |
-| You want it in a dashboard or a script | `watch --format prometheus`, NDJSON, `--json` everywhere, shell completions, Shortcuts actions |
-| You will run it on a machine you care about | **Read-only**: nothing changes without a preview and an explicit `--apply` or authorization dialog |
+| You want it in a dashboard or a script | `watch prometheus`, NDJSON, `json` on every command, shell completions, Shortcuts actions |
+| You will run it on a machine you care about | **Read-only**: nothing changes without a preview and an explicit `apply` or authorization dialog |
 
 ## See it
 
@@ -79,40 +79,45 @@ OK    MTU       1500-byte packets reach the gateway
 VERDICT  No problem found on this path right now. If an app is slow, the issue is probably the remote service.
 ```
 
-Each layer is checked only if the one below it works, and the verdict blames the **lowest** failing layer (router unreachable → "the problem is local", router fine but no internet → "restart the modem or call your ISP"). `diagnose` exits 1 when a layer fails and supports `--json`. It sends a few ICMP packets to your gateway, one TCP connection to 1.1.1.1:443 and one DNS lookup, **only when you run it**. The app has the same check on the Diagnostics page, in the menu bar panel and as a Shortcuts action.
+Each layer is checked only if the one below it works, and the verdict blames the **lowest** failing layer (router unreachable → "the problem is local", router fine but no internet → "restart the modem or call your ISP"). `diagnose` exits 1 when a layer fails and supports `json`. It sends a few ICMP packets to your gateway, one TCP connection to 1.1.1.1:443 and one DNS lookup, **only when you run it**. The app has the same check on the Diagnostics page, in the menu bar panel and as a Shortcuts action.
 
 ## CLI cookbook
 
 ```sh
 macora                                # Connected adapters first; system groups collapsed
-macora --all --compact                # Expand everything with less detail
-macora --group Tunnels
-macora --interface en0 --ipv6
+macora all                            # Expand everything (tunnels, system links, loopback)
+macora en0                            # One interface, explained
+macora en0 raw                        # ...or ifconfig's own text for it
+macora list                           # Interface names in system order, like ifconfig -l
+macora list up                        # ...only the ones that are up (also: down)
+macora ipv6 group Tunnels             # Words combine: one family, one group
 macora explain en0                    # Flags, IPv6 and role in plain words
 macora doctor                         # Local interface findings (no network traffic)
-macora diagnose [--json]              # Gateway, internet, DNS and MTU walk-through
-macora ping 1.1.1.1 --count 5         # Loss and latency
+macora diagnose                       # Gateway, internet, DNS and MTU walk-through
+macora ping 1.1.1.1 count 5           # Loss and latency
 macora trace example.com              # Hop-by-hop path
-macora report --format html --redact > report.html
-macora report --format md
-macora watch --count 10 --interval 1 --json          # NDJSON frames, counters and rates
-macora watch --format prometheus                     # Text exposition for scraping
+macora report html redact > report.html
+macora report md
+macora watch count 10 interval 1 json # NDJSON frames, counters and rates
+macora watch prometheus               # Text exposition for scraping
 macora snapshot before.macora         # Exact ifconfig capture, mode 0600; no overwrites
-macora diff before.macora after.macora --redact
-macora --from before.macora --all     # Inspect a capture offline
+macora diff before.macora after.macora redact
+macora all from before.macora         # Inspect a capture offline
 macora services | wifi | routes | dns | neighbors | sockets | path | topology
 macora resolve example.com            # Explicit DNS lookup
 macora subnet 192.168.1.8/24
-macora probe 1.1.1.1:443 --timeout-ms 1500           # Explicit outbound TCP connection
-macora set en0 mtu 1400               # Preview only
-sudo macora set en0 mtu 1400 --apply  # Explicit change; the device may reject it
-macora tui --theme high-contrast      # default | mono | high-contrast
+macora probe 1.1.1.1:443 timeout 1500 # Explicit outbound TCP connection
+macora en0 mtu 1400                   # Preview only
+sudo macora en0 mtu 1400 apply        # Explicit change; the device may reject it
+macora tui theme high-contrast        # default | mono | high-contrast
 macora completions zsh > ~/.zsh/completions/_macora  # also bash, fish
+macora json                           # Any command takes json for machine-readable output
 ```
 
-`--format` accepts `table` (default), `json`, `ndjson`, `md`/`html` (report) and `prometheus` (show/watch). Colors turn off in pipes and with `NO_COLOR`; `--color always|never` overrides. `macora --help` lists everything; `man macora` is installed by the install script.
 
-`--up` means administratively enabled; link-active is a different property. `utun` presence does **not** establish VPN ownership or connectivity. `en0` is not assumed to be Wi-Fi: hardware port names come from `networksetup`. Global-range address labels do not verify internet reachability. UI traffic sums the Network adapter group only, reducing tunnel/bridge double counting; it is not per-process bandwidth accounting.
+Options are plain words, not dashes: `json`, `redact`, `html`, `md`, `prometheus`, `from FILE`, `count N`, `interval S`, `theme NAME`. Colors turn off in pipes and with `NO_COLOR`; `color always|never` overrides. `macora help` lists everything; `man macora` is installed by the install script. The older `--flag` spellings still work for scripts, but are no longer documented.
+
+`up` means administratively enabled; link-active is a different property. `utun` presence does **not** establish VPN ownership or connectivity. `en0` is not assumed to be Wi-Fi: hardware port names come from `networksetup`. Global-range address labels do not verify internet reachability. UI traffic sums the Network adapter group only, reducing tunnel/bridge double counting; it is not per-process bandwidth accounting.
 
 Snapshots contain private network data. Redaction masks IP and MAC values present in the interface model; it does not anonymize interface labels, service names, SSIDs, proxy settings, route/DNS inspectors or arbitrary copied text. Raw captures and full exports stay intentionally unredacted.
 
@@ -141,9 +146,9 @@ First-run welcome card, per-adapter sparklines, a menu-bar panel (rates, "Why sl
 
 ```sh
 macora interactive              # Persistent command session
-macora repl --from tests/fixtures/macos.ifconfig
-macora tui --all --interval 1   # Live full-screen workspace on a Mac
-macora tui --from tests/fixtures/macos.ifconfig
+macora repl from tests/fixtures/macos.ifconfig
+macora tui all interval 1       # Live full-screen workspace on a Mac
+macora tui from tests/fixtures/macos.ifconfig
 ```
 
 In the REPL, use `select en0`, `detail`, `baseline`, `refresh`, `changes`, `history`, `redact on`, `export FILE` and `help`. A settings plan is never executed without explicit apply and exact terminal confirmation. The TUI uses `/` to filter, `:` for its palette, 1–6 for pages, arrows/j/k for navigation, `b` for baseline, `p` for pause and `q` to exit. [Full guide](docs/INTERACTIVE.md).
@@ -179,7 +184,7 @@ site/                 GitHub Pages landing page
 
 ## Validation status
 
-Run on an Apple silicon Mac (the 0.3.0 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **51 Rust tests, 4 pseudo-terminal tests, 27 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **44-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, notarization, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
+Run on an Apple silicon Mac (the 0.3.0 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **57 Rust tests, 4 pseudo-terminal tests, 27 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **59-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, notarization, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
 
 ## Roadmap
 

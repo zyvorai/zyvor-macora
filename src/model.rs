@@ -50,6 +50,8 @@ pub struct Interface {
     pub counters: Option<Counters>,
     pub hardware: Option<String>,
     pub raw: Vec<String>,
+    /// Position in the original `ifconfig -a` output (the parsed list is sorted by name).
+    pub order: usize,
 }
 impl Interface {
     pub fn group(&self) -> &'static str {

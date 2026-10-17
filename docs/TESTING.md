@@ -4,11 +4,11 @@
 
 Run on an Apple silicon Mac (macOS 27.x, Rust 1.98, Swift 6):
 
-- 51 Rust tests (parser, scenarios, interactive/TUI, and 11 new feature tests: ping parsing, verdict logic, host validation, HTML/Prometheus output, completions, `--format` validation).
+- 57 Rust tests (parser, scenarios, interactive/TUI, and feature tests: ping parsing, verdict logic, host validation, HTML/Prometheus output, completions, format validation, ifconfig-style words).
 - 4 pseudo-terminal tests (terminal restoration, palette, pause/refresh).
 - rustfmt and Clippy with warnings denied.
 - 27 Swift tests, including diagnosis decoding, sparkline history and redacted summaries.
-- `scripts/smoke-cli.sh`: 44 read-only checks of the release binary against the live Mac (valid JSON/NDJSON, snapshot mode 0600 and no-overwrite, error exits).
+- `scripts/smoke-cli.sh`: 59 read-only checks (including `macora list` == `ifconfig -l`) of the release binary against the live Mac (valid JSON/NDJSON, snapshot mode 0600 and no-overwrite, error exits).
 - `scripts/build-macos.sh` and `scripts/package-mac.sh`: app build, DMG, pkg, tarball and verified checksums.
 - Screenshots in `docs/ux/` captured from the running app in `--demo` mode.
 

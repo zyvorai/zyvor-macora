@@ -30,27 +30,31 @@ pub const COMMANDS: &[&str] = &[
     "set",
     "completions",
 ];
-pub const FLAGS: &[&str] = &[
-    "--all",
-    "--up",
-    "--interface",
-    "--group",
-    "--ipv4",
-    "--ipv6",
-    "--compact",
-    "--json",
-    "--format",
-    "--redact",
-    "--from",
-    "--color",
-    "--no-color",
-    "--interval",
-    "--count",
-    "--timeout-ms",
-    "--apply",
-    "--theme",
-    "--help",
-    "--version",
+/// Option words accepted after a command or interface (see `cli::words_to_flags`).
+pub const WORDS: &[&str] = &[
+    "all",
+    "up",
+    "down",
+    "list",
+    "compact",
+    "ipv4",
+    "ipv6",
+    "raw",
+    "json",
+    "redact",
+    "html",
+    "md",
+    "prometheus",
+    "apply",
+    "from",
+    "interface",
+    "group",
+    "count",
+    "interval",
+    "timeout",
+    "format",
+    "theme",
+    "color",
 ];
 pub const FORMATS: &[&str] = &["table", "json", "ndjson", "md", "html", "prometheus"];
 pub const THEMES: &[&str] = &["default", "mono", "high-contrast"];
@@ -176,41 +180,86 @@ pub fn prometheus(s: &Snapshot, rates: &BTreeMap<String, (f64, f64)>) -> String 
 
 pub fn completions(shell: &str) -> Result<String, String> {
     let cmds = COMMANDS.join(" ");
-    let flags = FLAGS.join(" ");
+    let words = WORDS.join(" ");
+    let formats = FORMATS.join(" ");
+    let themes = THEMES.join(" ");
+    let groups = "Network Bridges Virtual Tunnels System Loopback";
     match shell {
         "bash" => Ok(format!(
-            "_macora() {{\n  local cur=\"${{COMP_WORDS[COMP_CWORD]}}\" prev=\"${{COMP_WORDS[COMP_CWORD-1]}}\"\n  case \"$prev\" in\n    --format) COMPREPLY=($(compgen -W \"{}\" -- \"$cur\")); return;;\n    --theme) COMPREPLY=($(compgen -W \"{}\" -- \"$cur\")); return;;\n    --color) COMPREPLY=($(compgen -W \"auto always never\" -- \"$cur\")); return;;\n    --group) COMPREPLY=($(compgen -W \"Network Bridges Virtual Tunnels System Loopback\" -- \"$cur\")); return;;\n    --from) COMPREPLY=($(compgen -f -- \"$cur\")); return;;\n  esac\n  if [[ \"$cur\" == -* ]]; then COMPREPLY=($(compgen -W \"{flags}\" -- \"$cur\"))\n  elif [[ $COMP_CWORD -eq 1 ]]; then COMPREPLY=($(compgen -W \"{cmds}\" -- \"$cur\"))\n  else COMPREPLY=($(compgen -f -- \"$cur\")); fi\n}}\ncomplete -F _macora macora\n",
-            FORMATS.join(" "), THEMES.join(" ")
+            r#"_macora() {{
+  local cur="${{COMP_WORDS[COMP_CWORD]}}" prev="${{COMP_WORDS[COMP_CWORD-1]}}"
+  case "$prev" in
+    format) COMPREPLY=($(compgen -W "{formats}" -- "$cur")); return;;
+    theme) COMPREPLY=($(compgen -W "{themes}" -- "$cur")); return;;
+    color) COMPREPLY=($(compgen -W "auto always never" -- "$cur")); return;;
+    group) COMPREPLY=($(compgen -W "{groups}" -- "$cur")); return;;
+    from) COMPREPLY=($(compgen -f -- "$cur")); return;;
+    interface|explain|set) COMPREPLY=($(compgen -W "$(macora list 2>/dev/null)" -- "$cur")); return;;
+  esac
+  if [[ $COMP_CWORD -eq 1 ]]; then
+    COMPREPLY=($(compgen -W "{cmds} {words} $(macora list 2>/dev/null)" -- "$cur"))
+  else
+    COMPREPLY=($(compgen -W "{words} $(macora list 2>/dev/null)" -- "$cur"))
+  fi
+}}
+complete -F _macora macora
+"#
         )),
-        "zsh" => {
-            let flag_specs: String = FLAGS
-                .iter()
-                .map(|f| match *f {
-                    "--format" => format!("  '--format[Output format]:format:({})' \\\n", FORMATS.join(" ")),
-                    "--theme" => format!("  '--theme[TUI theme]:theme:({})' \\\n", THEMES.join(" ")),
-                    "--color" => "  '--color[Color policy]:mode:(auto always never)' \\\n".into(),
-                    "--group" => "  '--group[Interface group]:group:(Network Bridges Virtual Tunnels System Loopback)' \\\n".into(),
-                    "--from" => "  '--from[Saved ifconfig capture]:capture:_files' \\\n".into(),
-                    "--interface" | "--interval" | "--count" | "--timeout-ms" => format!("  '{f}[value]:value:' \\\n"),
-                    _ => format!("  '{f}' \\\n"),
-                })
-                .collect();
-            Ok(format!("#compdef macora\n_arguments -s \\\n  '1:command:({cmds})' \\\n{flag_specs}  '*:argument:_files'\n"))
-        }
+        "zsh" => Ok(format!(
+            r#"#compdef macora
+_macora() {{
+  local -a cmds opts ifaces
+  cmds=({cmds})
+  opts=({words})
+  ifaces=(${{(z)$(macora list 2>/dev/null)}})
+  case $words[CURRENT-1] in
+    format) compadd -- {formats}; return;;
+    theme) compadd -- {themes}; return;;
+    color) compadd -- auto always never; return;;
+    group) compadd -- {groups}; return;;
+    from) _files; return;;
+    interface|explain|set) compadd -- $ifaces; return;;
+  esac
+  if (( CURRENT == 2 )); then
+    compadd -- $cmds $opts $ifaces
+  else
+    compadd -- $opts $ifaces
+  fi
+}}
+_macora "$@"
+"#
+        )),
         "fish" => {
-            let mut out = String::from("complete -c macora -f\n");
-            out += &format!("complete -c macora -n '__fish_use_subcommand' -a '{cmds}'\n");
-            for f in FLAGS {
-                let name = f.trim_start_matches('-');
-                match *f {
-                    "--format" => out += &format!("complete -c macora -l {name} -x -a '{}'\n", FORMATS.join(" ")),
-                    "--theme" => out += &format!("complete -c macora -l {name} -x -a '{}'\n", THEMES.join(" ")),
-                    "--color" => out += "complete -c macora -l color -x -a 'auto always never'\n",
-                    "--from" => out += "complete -c macora -l from -r\n",
-                    "--interface" | "--group" | "--interval" | "--count" | "--timeout-ms" => out += &format!("complete -c macora -l {name} -x\n"),
-                    _ => out += &format!("complete -c macora -l {name}\n"),
-                }
-            }
+            let mut out = String::from(
+                "complete -c macora -f
+",
+            );
+            out += &format!(
+                "complete -c macora -n '__fish_use_subcommand' -a '{cmds}'
+"
+            );
+            out += "complete -c macora -n '__fish_use_subcommand' -a '(macora list 2>/dev/null)'\n";
+            out += &format!(
+                "complete -c macora -n 'not __fish_use_subcommand' -a '{words}'
+"
+            );
+            out += "complete -c macora -n 'not __fish_use_subcommand' -a '(macora list 2>/dev/null)'\n";
+            out += &format!(
+                "complete -c macora -n '__fish_prev_arg_in format' -a '{formats}'
+"
+            );
+            out += &format!(
+                "complete -c macora -n '__fish_prev_arg_in theme' -a '{themes}'
+"
+            );
+            out += "complete -c macora -n '__fish_prev_arg_in color' -a 'auto always never'
+";
+            out += &format!(
+                "complete -c macora -n '__fish_prev_arg_in group' -a '{groups}'
+"
+            );
+            out += "complete -c macora -n '__fish_prev_arg_in from' -F
+";
             Ok(out)
         }
         _ => Err("Shell must be bash, zsh or fish".into()),

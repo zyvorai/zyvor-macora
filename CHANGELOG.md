@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### CLI: words, not dashes, and it works like ifconfig
+
+- Options are plain words: `macora en0`, `macora en0 raw`, `macora list up`, `macora report html redact`, `macora watch count 5 json`. `macora en0` shows one interface, `raw` prints ifconfig's own text for it, and `list` prints names in system order, identical to `ifconfig -l`.
+- `macora en0 mtu 1400` and `macora en0 up|down` preview the change; add `apply` to run it (ifconfig applies immediately).
+- The older `--flag` spellings keep working as undocumented aliases, so scripts and CI do not break. Help, man page, completions and README show only words. Completions now complete interface names.
+- The native app calls the CLI with words as well.
+- Fix: `raw` on an offline capture no longer prefixes the OFFLINE banner.
+
 ## 0.3.0
 
 ### Diagnose

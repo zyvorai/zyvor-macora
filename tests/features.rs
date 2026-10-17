@@ -136,18 +136,27 @@ fn completions_cover_every_command_and_flag() {
 
 #[test]
 fn every_help_command_is_in_the_completion_table() {
-    for line in zyvor_macora::cli::HELP.lines().skip(3) {
-        if line.trim().is_empty() {
-            break;
+    let mut in_commands = false;
+    let mut seen = 0;
+    for line in zyvor_macora::cli::HELP.lines() {
+        if line.starts_with("COMMANDS") {
+            in_commands = true;
+            continue;
         }
-        let name = line.split_whitespace().next().unwrap();
-        for part in name.split('/') {
-            assert!(
-                export::COMMANDS.contains(&part),
-                "{part} missing from completions"
-            );
+        if in_commands {
+            if line.trim().is_empty() {
+                break;
+            }
+            for part in line.split_whitespace().next().unwrap().split('/') {
+                assert!(
+                    export::COMMANDS.contains(&part),
+                    "{part} missing from completions"
+                );
+                seen += 1;
+            }
         }
     }
+    assert!(seen >= 20, "parsed {seen} help commands");
 }
 
 #[test]
@@ -199,4 +208,143 @@ fn tui_palettes_remap_codes() {
     assert_eq!(tui::restyle("mono", "92"), "0");
     assert_eq!(tui::restyle("mono", "90"), "2");
     assert_eq!(tui::restyle("high-contrast", "90"), "37");
+}
+
+fn fixture_order() -> Vec<String> {
+    MAC.lines()
+        .filter(|l| !l.starts_with(char::is_whitespace) && l.contains(": flags="))
+        .map(|l| l.split(':').next().unwrap().to_string())
+        .collect()
+}
+fn stdout(args: &[&str]) -> String {
+    String::from_utf8_lossy(&run(args).stdout).to_string()
+}
+
+#[test]
+fn list_keeps_system_order_and_filters_by_state() {
+    let order = fixture_order();
+    let listed = stdout(&["list", "from", fixture()]);
+    assert_eq!(
+        listed.trim().split(' ').collect::<Vec<_>>(),
+        order,
+        "list must keep ifconfig order"
+    );
+    let up = stdout(&["list", "up", "from", fixture()]);
+    let down = stdout(&["list", "down", "from", fixture()]);
+    let (up, down): (Vec<_>, Vec<_>) = (
+        up.split_whitespace().collect(),
+        down.split_whitespace().collect(),
+    );
+    assert!(
+        up.iter().all(|n| !down.contains(n)),
+        "up and down are disjoint"
+    );
+    assert_eq!(up.len() + down.len(), order.len());
+    assert!(
+        !run(&["list", "up", "down", "from", fixture()])
+            .status
+            .success(),
+        "up with down is rejected"
+    );
+}
+
+#[test]
+fn interface_name_works_like_ifconfig() {
+    let one = stdout(&["en0", "from", fixture()]);
+    assert!(
+        one.contains("en0") && !one.contains("bridge0"),
+        "only the named interface"
+    );
+    let missing = run(&["nosuch0", "from", fixture()]);
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("not found"));
+    // A real command name is never mistaken for an interface.
+    assert!(run(&["subnet", "10.0.0.0/8"]).status.success());
+}
+
+#[test]
+fn raw_is_the_original_ifconfig_text() {
+    let raw = stdout(&["en0", "raw", "from", fixture()]);
+    let start = MAC.lines().position(|l| l.starts_with("en0:")).unwrap();
+    let expected: Vec<&str> = std::iter::once(MAC.lines().nth(start).unwrap())
+        .chain(
+            MAC.lines()
+                .skip(start + 1)
+                .take_while(|l| l.starts_with(char::is_whitespace)),
+        )
+        .collect();
+    assert_eq!(raw.trim_end(), expected.join("\n"));
+    assert!(
+        !run(&["routes", "raw"]).status.success(),
+        "raw only applies to the interface view"
+    );
+}
+
+#[test]
+fn changes_by_word_are_previews_until_apply() {
+    let out = run(&["en0", "mtu", "1400", "from", fixture()]);
+    assert!(out.status.success());
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        text.contains("Preview") && text.contains("/sbin/ifconfig en0 mtu 1400"),
+        "{text}"
+    );
+    let down = stdout(&["en0", "down", "from", fixture()]);
+    assert!(down.contains("/sbin/ifconfig en0 down"), "{down}");
+    assert!(
+        !run(&["en0", "mtu", "1400", "apply", "from", fixture()])
+            .status
+            .success(),
+        "offline apply is refused"
+    );
+    assert!(!run(&["nosuch0", "up", "from", fixture()]).status.success());
+}
+
+#[test]
+fn option_words_match_the_dash_flags() {
+    let a = stdout(&["show", "all", "compact", "from", fixture()]);
+    let b = stdout(&["show", "--all", "--compact", "--from", fixture()]);
+    assert_eq!(
+        a, b,
+        "words and the hidden dash flags produce the same output"
+    );
+    assert_eq!(
+        stdout(&["json", "from", fixture()]),
+        stdout(&["--json", "--from", fixture()])
+    );
+    assert_eq!(
+        stdout(&["report", "md", "from", fixture()]),
+        stdout(&["report", "--from", fixture()])
+    );
+    let html = stdout(&["report", "html", "redact", "from", fixture()]);
+    assert!(html.starts_with("<!doctype html>") && !html.contains("192.168."));
+    // Positional arguments are never mistaken for words.
+    assert!(stdout(&["subnet", "10.0.0.0/8", "json"]).starts_with('{'));
+    assert!(run(&["resolve", "up"]).status.code().is_some());
+}
+
+#[test]
+fn words_translate_to_flags() {
+    use zyvor_macora::cli::words_to_flags;
+    let w = |v: &[&str]| words_to_flags(v.iter().map(|s| s.to_string()).collect());
+    assert_eq!(w(&["en0"]), ["show", "--interface", "en0", "--all"]);
+    assert_eq!(w(&["en0", "up"]), ["set", "en0", "up"]);
+    assert_eq!(
+        w(&["en0", "mtu", "1400", "apply"]),
+        ["set", "en0", "mtu", "1400", "--apply"]
+    );
+    assert_eq!(w(&["list", "up"]), ["show", "--list", "--up"]);
+    assert_eq!(
+        w(&["watch", "count", "3", "json"]),
+        ["watch", "--count", "3", "--json"]
+    );
+    assert_eq!(
+        w(&["diff", "a", "b", "redact"]),
+        ["diff", "a", "b", "--redact"]
+    );
+    // Existing dash flags and their values pass through untouched.
+    assert_eq!(
+        w(&["--format", "html", "report"]),
+        ["--format", "html", "report"]
+    );
 }

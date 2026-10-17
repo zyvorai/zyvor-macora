@@ -80,7 +80,7 @@ import UniformTypeIdentifiers
             if demo {
                 guard let url = Bundle.main.url(forResource: "demo", withExtension: "json") else { throw MacoraError.message("Demo fixture is missing") }
                 text = try String(contentsOf: url, encoding: .utf8)
-            } else { text = try await ProcessRunner.run(cli, ["show", "--json", "--all"]) }
+            } else { text = try await ProcessRunner.run(cli, ["show", "json", "all"]) }
             let next = try NetworkSnapshot.decode(Data(text.utf8))
             let now = Date()
             if baseline == nil { baseline = next; baselineDate = now }
@@ -121,7 +121,7 @@ import UniformTypeIdentifiers
     func diagnose() async {
         do {
             if demo { findings = ["DEMO MODE — findings require a live Mac."]; return }
-            let text = try await ProcessRunner.run(cli, ["doctor", "--json"])
+            let text = try await ProcessRunner.run(cli, ["doctor", "json"])
             findings = try JSONDecoder().decode([String: [String]].self, from: Data(text.utf8))["findings"] ?? []
         } catch { self.actionError = error.localizedDescription }
     }
@@ -142,7 +142,7 @@ import UniformTypeIdentifiers
         }
         do {
             // diagnose exits 1 when a layer fails but still prints the full report.
-            let text = try await ProcessRunner.run(cli, ["diagnose", "--json"], timeout: 45, acceptedStatuses: [0, 1])
+            let text = try await ProcessRunner.run(cli, ["diagnose", "json"], timeout: 45, acceptedStatuses: [0, 1])
             diagnosis = try DiagnosisReport.decode(text)
         } catch { actionError = error.localizedDescription }
     }
@@ -162,7 +162,7 @@ import UniformTypeIdentifiers
                 let original = String(decoding: try JSONEncoder().encode(snapshot), as: UTF8.self)
                 text = redact ? SnapshotPrivacy.redacted(original, snapshots: [snapshot]) : original
             }
-            else { text = try await ProcessRunner.run(cli, ["show", "--all", "--json"] + (redact ? ["--redact"] : [])) }
+            else { text = try await ProcessRunner.run(cli, ["show", "all", "json"] + (redact ? ["redact"] : [])) }
             let panel = NSSavePanel(); panel.nameFieldStringValue = redact ? "macora-redacted.json" : "macora-snapshot.json"
             if panel.runModal() == .OK, let url = panel.url {
                 try text.write(to: url, atomically: true, encoding: .utf8)

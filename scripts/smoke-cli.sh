@@ -29,6 +29,18 @@ run 0 --version
 run 0 --help
 run 0
 run 0 --all
+run 0 all
+run 0 list
+run 0 list up
+run 0 list down
+run 0 up
+run 0 en0
+run 0 en0 raw
+run 0 en0 mtu 1400 --from "$fixture"
+run 0 report html redact
+run 0 diagnose json
+run 1 list up down
+run 1 nosuch0
 run 0 --all --compact --redact
 run 0 --from "$fixture" --all
 run 0 --from "$fixture" --interface en0 --ipv6
@@ -77,6 +89,11 @@ run 1 subnet not-a-cidr
 [[ "$(stat -f %Lp "$tmp/a.macora" 2>/dev/null || stat -c %a "$tmp/a.macora")" == 600 ]] \
   && { pass=$((pass+1)); echo 'ok    snapshot mode 0600'; } || { fail=$((fail+1)); echo 'FAIL  snapshot mode' >&2; }
 run 1 snapshot "$tmp/a.macora"                    # must refuse to overwrite
+
+# -l must match ifconfig -l exactly, in the same order.
+if [[ "$("$bin" list)" == "$(ifconfig -l)" ]]; then pass=$((pass+1)); echo 'ok    macora list == ifconfig -l'; else fail=$((fail+1)); echo 'FAIL  macora list differs from ifconfig -l' >&2; fi
+# raw must equal ifconfig, apart from the ether lines macOS may mask for some launchers.
+if diff <("$bin" raw | grep -v ether) <(ifconfig -a | grep -v ether) >/dev/null; then pass=$((pass+1)); echo 'ok    macora raw == ifconfig -a (ether lines excluded)'; else fail=$((fail+1)); echo 'FAIL  macora raw differs from ifconfig -a' >&2; fi
 
 printf '\n%s passed, %s failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]

@@ -14,12 +14,18 @@ use std::{
 
 pub const HELP: &str = "MACORA by Zyvor — Your Mac’s network, made clear.
 
-USAGE  macora [COMMAND] [OPTIONS]
+USAGE
+  macora                    Interfaces, grouped and explained
+  macora en0                One interface; add raw for ifconfig's own text
+  macora list [up|down]     Interface names only, like ifconfig -l
+  macora en0 mtu 1400       Preview a change; add apply to run it
+  macora COMMAND [WORDS]    e.g. macora report html redact
 
+COMMANDS
   interactive / repl    Persistent exploration, filtering, history and plan previews
   tui                   Full-screen terminal dashboard; / search, : palette, ? help
   topology              Observed bridge membership and interface roles
-  report                Markdown local-evidence report (--json supported)
+  report                Markdown local-evidence report (json, html also work)
   resolve HOST          Explicit macOS DNS lookup via dscacheutil
   show                  Grouped interfaces (default)
   explain INTERFACE     Explain flags, IPv6 and interface roles
@@ -32,36 +38,35 @@ USAGE  macora [COMMAND] [OPTIONS]
   sockets               TCP/UDP sockets visible to your user
   doctor                Local interface findings (no external probes)
   diagnose              Why is my network slow? Gateway, internet, DNS and MTU checks
-  ping HOST             Packet loss and latency (--count, default 4)
+  ping HOST             Packet loss and latency (count N, default 4)
   trace HOST            Hop-by-hop path via traceroute
-  completions SHELL     Print bash, zsh or fish completions
   watch                 Live counters and traffic rates; Ctrl-C to stop
   snapshot FILE         Save private ifconfig capture, never overwrite
   diff BEFORE AFTER     Compare two ifconfig captures
   subnet IPv4/PREFIX    Network, mask, host range; handles /31 and /32
   probe IP:PORT         Explicit TCP reachability check (IPv6: [::1]:443)
   set IFACE up|down     Preview administrative state change
-  set IFACE mtu NUMBER  Preview MTU change; --apply executes on macOS
+  set IFACE mtu NUMBER  Preview MTU change; add apply to execute on macOS
+  completions SHELL     Print bash, zsh or fish completions
 
-OPTIONS
-  --all                 Expand tunnels, Apple system links and loopback
-  --up                  Administratively up interfaces only
-  --interface NAME      Select one interface
-  --group NAME          Network, Bridges, Virtual, Tunnels, System, Loopback
-  --ipv4 | --ipv6       Address family filter
-  --compact             Hide media, MAC and cumulative counters
-  --json                Machine-readable output (watch: NDJSON)
-  --format FMT          table (default), json, ndjson; report: md, html; watch/show: prometheus
-  --theme NAME          tui colors: default, mono, high-contrast
-  --redact              Mask IP/MAC values in show/explain/doctor/diff
-  --from FILE           Inspect saved macOS ifconfig output, offline
-  --color MODE          auto (default), always, never; honors NO_COLOR
-  --interval SECONDS    Watch interval 0.2..60 (default 2)
-  --count NUMBER        Watch frames; omitted means unlimited
-  --timeout-ms NUMBER   Probe timeout 1..30000 (default 2000)
-  --apply               Execute a previewed set command; requires privileges
-  -h, --help            Help
-  -V, --version         Version
+WORDS  (after a command or interface)
+  all                   Include tunnels, Apple system links and loopback
+  up | down             Only interfaces that are up / down
+  compact               Hide media, MAC and cumulative counters
+  ipv4 | ipv6           One address family
+  raw                   The original ifconfig text, unexplained
+  json                  Machine-readable output (watch: NDJSON)
+  redact                Mask IP/MAC values
+  html | md | prometheus  Output format (report; watch and show for prometheus)
+  from FILE             Inspect saved macOS ifconfig output, offline
+  interface NAME        Select one interface
+  group NAME            Network, Bridges, Virtual, Tunnels, System, Loopback
+  count N               Watch frames (omitted means unlimited)
+  interval SECONDS      Watch interval 0.2..60 (default 2)
+  timeout MS            Probe timeout 1..30000 (default 2000)
+  theme NAME            tui palette: default, mono, high-contrast
+  color MODE            auto (default), always, never; NO_COLOR is honored
+  apply                 Execute a previewed set command; requires privileges
 
 Use the SwiftUI app for DNS, proxy, DHCP/static IP, Wi-Fi and service management.
 Live collection and configuration require macOS. No telemetry, no background server.
@@ -80,8 +85,161 @@ pub struct Args {
     pub count: Option<u32>,
     pub timeout_ms: Option<u64>,
     pub apply: bool,
+    /// ifconfig -l: print interface names only.
+    pub list: bool,
+    /// ifconfig -d: interfaces that are down.
+    pub down: bool,
+    /// Print the original ifconfig text instead of the explained view.
+    pub raw: bool,
+}
+impl Args {
+    fn up_and_down(&self) -> bool {
+        self.filter.up && self.down
+    }
+}
+/// Words that stand for a flag: `macora en0 raw`, `macora report html redact`.
+const FLAG_WORDS: &[(&str, &str)] = &[
+    ("all", "--all"),
+    ("up", "--up"),
+    ("down", "--down"),
+    ("compact", "--compact"),
+    ("json", "--json"),
+    ("redact", "--redact"),
+    ("apply", "--apply"),
+    ("raw", "--raw"),
+    ("list", "--list"),
+    ("ipv4", "--ipv4"),
+    ("ipv6", "--ipv6"),
+];
+/// Words that name an output format: `macora report html`.
+const FORMAT_WORDS: &[&str] = &["html", "md", "prometheus"];
+/// Words followed by a value: `macora watch count 5 interval 1`.
+const VALUE_WORDS: &[(&str, &str)] = &[
+    ("from", "--from"),
+    ("interface", "--interface"),
+    ("group", "--group"),
+    ("interval", "--interval"),
+    ("count", "--count"),
+    ("timeout", "--timeout-ms"),
+    ("format", "--format"),
+    ("theme", "--theme"),
+    ("color", "--color"),
+];
+const VALUE_FLAGS: &[&str] = &[
+    "--from",
+    "--interface",
+    "--group",
+    "--interval",
+    "--count",
+    "--timeout-ms",
+    "--format",
+    "--theme",
+    "--color",
+];
+fn flag_word(t: &str) -> Option<&'static str> {
+    FLAG_WORDS.iter().find(|(w, _)| *w == t).map(|(_, f)| *f)
+}
+/// Positional arguments each command takes before option words begin.
+fn positionals(cmd: &str, rest: &[&String]) -> usize {
+    match cmd {
+        "explain" | "snapshot" | "subnet" | "probe" | "resolve" | "ping" | "trace"
+        | "completions" => 1,
+        "diff" => 2,
+        "set" => {
+            if rest.get(1).map(|s| s.as_str()) == Some("mtu") {
+                3
+            } else {
+                2
+            }
+        }
+        _ => 0,
+    }
+}
+/// Translates the word grammar into the flags the parser understands. Dash flags pass through
+/// unchanged, so existing scripts keep working.
+pub fn words_to_flags(args: Vec<String>) -> Vec<String> {
+    let mut out: Vec<String> = Vec::with_capacity(args.len() + 2);
+    let mut cmd: Option<String> = None;
+    let mut left = 0usize;
+    let mut i = 0;
+    while i < args.len() {
+        let t = &args[i];
+        i += 1;
+        if t.starts_with('-') {
+            out.push(t.clone());
+            if VALUE_FLAGS.contains(&t.as_str()) && i < args.len() {
+                out.push(args[i].clone());
+                i += 1;
+            }
+            continue;
+        }
+        if cmd.is_none() {
+            let rest: Vec<&String> = args[i..].iter().filter(|a| !a.starts_with('-')).collect();
+            let known =
+                export::COMMANDS.contains(&t.as_str()) || ["help", "version"].contains(&t.as_str());
+            let modifier = flag_word(t).is_some() || FORMAT_WORDS.contains(&t.as_str());
+            let name_like = t.len() <= 32
+                && t.chars()
+                    .all(|c| c.is_ascii_alphanumeric() || "_.:-".contains(c));
+            if known {
+                left = positionals(t, &rest);
+                cmd = Some(t.clone());
+                out.push(t.clone());
+                continue;
+            } else if !modifier && name_like {
+                // ifconfig style: `en0` shows it, `en0 up|down|mtu N` previews a change.
+                match rest.first().map(|s| s.as_str()) {
+                    Some("mtu") => {
+                        out.extend(["set".to_string(), t.clone()]);
+                        left = 2;
+                        cmd = Some("set".into());
+                    }
+                    Some("up") | Some("down") => {
+                        out.extend(["set".to_string(), t.clone()]);
+                        left = 1;
+                        cmd = Some("set".into());
+                    }
+                    _ => {
+                        out.extend([
+                            "show".to_string(),
+                            "--interface".into(),
+                            t.clone(),
+                            "--all".into(),
+                        ]);
+                        cmd = Some("show".into());
+                    }
+                }
+                continue;
+            } else if modifier {
+                out.push("show".into());
+                cmd = Some("show".into());
+            } else {
+                out.push(t.clone());
+                continue;
+            }
+        } else if left > 0 {
+            out.push(t.clone());
+            left -= 1;
+            continue;
+        }
+        if let Some(flag) = flag_word(t) {
+            out.push(flag.into());
+        } else if FORMAT_WORDS.contains(&t.as_str()) {
+            out.extend(["--format".to_string(), t.clone()]);
+        } else if let Some((_, flag)) = VALUE_WORDS.iter().find(|(w, _)| *w == t) {
+            out.push((*flag).into());
+            if i < args.len() {
+                out.push(args[i].clone());
+                i += 1;
+            }
+        } else {
+            out.push(t.clone());
+        }
+    }
+    out
 }
 pub fn arguments(args: Vec<String>) -> Result<Args, String> {
+    let args = words_to_flags(args);
     let mut out = Args::default();
     let mut args = args.into_iter();
     while let Some(a) = args.next() {
@@ -95,6 +253,9 @@ pub fn arguments(args: Vec<String>) -> Result<Args, String> {
             "--json" => out.json = true,
             "--redact" => out.redact = true,
             "--apply" => out.apply = true,
+            "--raw" => out.raw = true,
+            "--list" => out.list = true,
+            "--down" => out.down = true,
             "--ipv4" | "--ipv6" => {
                 let family = if a == "--ipv4" { 4 } else { 6 };
                 if out.filter.family.is_some() {
@@ -207,7 +368,9 @@ fn get(a: &Args) -> Result<Snapshot, String> {
 fn select(mut s: Snapshot, f: &Filter) -> Result<Snapshot, String> {
     if let Some(name) = &f.interface {
         if !s.interfaces.iter().any(|i| i.name == *name) {
-            return Err(format!("Interface {name} not found"));
+            return Err(format!(
+                "Interface {name} not found (if you meant a command, see --help)"
+            ));
         }
     }
     s.interfaces.retain(|i| f.matches(i));
@@ -292,6 +455,9 @@ fn system_view(cmd: &str) -> Result<String, String> {
 }
 pub fn run(args: Vec<String>) -> Result<(), String> {
     let a = arguments(args)?;
+    if a.up_and_down() {
+        return Err("Choose -u (up) or -d (down), not both".into());
+    }
     let cmd = a.words.first().map(String::as_str).unwrap_or("show");
     let t = Theme {
         color: !a.json
@@ -308,6 +474,12 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
         if !ok {
             return Err(format!("--format {f} is not supported for {cmd}"));
         }
+    }
+    if (a.list || a.raw || a.down) && cmd != "show" {
+        return Err(
+            "-l, -d and --raw apply to the interface view (macora [-a|-l|-u|-d] [INTERFACE])"
+                .into(),
+        );
     }
     if a.theme.is_some() && cmd != "tui" {
         return Err("--theme only applies to tui".into());
@@ -503,15 +675,32 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
         "help" => emit(HELP),
         "version" => emit(concat!("macora ", env!("CARGO_PKG_VERSION"))),
         "show" => {
-            let s = select(get(&a)?, &a.filter)?;
-            let mut output = if a.format.as_deref() == Some("prometheus") {
+            let mut s = select(get(&a)?, &a.filter)?;
+            if a.down {
+                s.interfaces.retain(|i| !i.up());
+            }
+            if a.list || a.raw {
+                // Like ifconfig: system order, not alphabetical.
+                s.interfaces.sort_by_key(|i| i.order);
+            }
+            if a.list {
+                let names: Vec<&str> = s.interfaces.iter().map(|i| i.name.as_str()).collect();
+                return emit(&names.join(" "));
+            }
+            let mut output = if a.raw {
+                s.interfaces
+                    .iter()
+                    .flat_map(|i| i.raw.iter().map(String::as_str))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            } else if a.format.as_deref() == Some("prometheus") {
                 export::prometheus(&s, &BTreeMap::new())
             } else if a.json {
                 s.json()
             } else {
                 view::interfaces(&s, &a.filter, &t, &BTreeMap::new())
             };
-            if a.from.is_some() && !a.json {
+            if a.from.is_some() && !a.json && !a.raw {
                 output = format!(
                     "{}\n{output}",
                     t.paint("93", "OFFLINE CAPTURE — not live telemetry")
