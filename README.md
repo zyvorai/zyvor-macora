@@ -208,6 +208,7 @@ MACORA uses macOS network services and locations rather than Linux NetworkManage
 | [docs/INTERACTIVE.md](docs/INTERACTIVE.md) | REPL and TUI guide |
 | [docs/UX.md](docs/UX.md) | Design and interaction notes |
 | [docs/TESTING.md](docs/TESTING.md) | What was run, how to repeat it, manual hardware checklist |
+| [Wiki](https://github.com/zyvorai/zyvor-macora/wiki) | Install, CLI guide, diagnose guide, troubleshooting, FAQ (sources in `wiki/`, synced by `scripts/sync-wiki.sh`) |
 | [docs/RELEASE.md](docs/RELEASE.md) | The release checklist: package, sign, notarize, verify, publish, Homebrew, site |
 | [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md) | Policy, how to help, history |
 

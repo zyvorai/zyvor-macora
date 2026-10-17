@@ -18,7 +18,8 @@ Releases are cut by hand today: build, sign and notarize on a Mac that holds the
    Use the full commit SHA; an abbreviated or invented one is rejected.
 7. **Homebrew.** `scripts/update-homebrew.sh X.Y.Z <tap checkout>` reads the published `.sha256` files and rewrites `Formula/macora.rb` and `Casks/macora.rb` in `zyvorai/homebrew-tap`. Commit and push the tap, then bump the templates in `packaging/homebrew/`.
 8. **Site and docs.** Replace the old version in `site/index.html` and `README.md` (download links, validation line). In `zyvor-web`, `docs/macora.mdx` names the DMG; the product page links to `releases/latest`. Open a PR there.
-9. **Check it live.** Pages shows the new version; `brew fetch` works for formula and cask; do a fresh `brew install` of both (below).
+9. **Wiki.** Update `wiki/` if install steps or commands changed, then `scripts/sync-wiki.sh`.
+10. **Check it live.** Pages shows the new version; `brew fetch` works for formula and cask; do a fresh `brew install` of both (below).
 
 ## Package, sign and notarize
 
