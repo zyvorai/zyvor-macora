@@ -6,6 +6,7 @@ _macora() {
     color) COMPREPLY=($(compgen -W "auto always never" -- "$cur")); return;;
     group) COMPREPLY=($(compgen -W "Network Bridges Virtual Tunnels System Loopback" -- "$cur")); return;;
     from) COMPREPLY=($(compgen -f -- "$cur")); return;;
+    to) return;; # a hostname is expected: nothing sensible to suggest
     interface|explain|set) COMPREPLY=($(compgen -W "$(macora list 2>/dev/null)" -- "$cur")); return;;
   esac
   if [[ $COMP_CWORD -eq 1 ]]; then

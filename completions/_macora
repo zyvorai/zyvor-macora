@@ -10,6 +10,7 @@ _macora() {
     color) compadd -- auto always never; return;;
     group) compadd -- Network Bridges Virtual Tunnels System Loopback; return;;
     from) _files; return;;
+    to) return;;
     interface|explain|set) compadd -- $ifaces; return;;
   esac
   if (( CURRENT == 2 )); then

@@ -238,3 +238,20 @@ fn repeated_runs_keep_the_most_serious_outcome() {
         "informational steps are not problems"
     );
 }
+
+#[test]
+fn completion_offers_nothing_after_to_because_a_hostname_follows() {
+    let bash = export::completions("bash").unwrap();
+    assert!(bash.contains("to) return;;"), "bash");
+    let zsh = export::completions("zsh").unwrap();
+    assert!(zsh.contains("to) return;;"), "zsh");
+    let fish = export::completions("fish").unwrap();
+    assert_eq!(fish.matches("not __fish_prev_arg_in to").count(), 2, "fish");
+    // And the bash script really behaves that way.
+    let script = format!(
+        "source <({} completions bash); COMP_WORDS=(macora diagnose to ''); COMP_CWORD=3; _macora; echo \"[${{COMPREPLY[*]}}]\"",
+        env!("CARGO_BIN_EXE_macora")
+    );
+    let out = Command::new("bash").args(["-c", &script]).output().unwrap();
+    assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "[]");
+}

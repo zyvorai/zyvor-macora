@@ -198,6 +198,7 @@ pub fn completions(shell: &str) -> Result<String, String> {
     color) COMPREPLY=($(compgen -W "auto always never" -- "$cur")); return;;
     group) COMPREPLY=($(compgen -W "{groups}" -- "$cur")); return;;
     from) COMPREPLY=($(compgen -f -- "$cur")); return;;
+    to) return;; # a hostname is expected: nothing sensible to suggest
     interface|explain|set) COMPREPLY=($(compgen -W "$(macora list 2>/dev/null)" -- "$cur")); return;;
   esac
   if [[ $COMP_CWORD -eq 1 ]]; then
@@ -222,6 +223,7 @@ _macora() {{
     color) compadd -- auto always never; return;;
     group) compadd -- {groups}; return;;
     from) _files; return;;
+    to) return;;
     interface|explain|set) compadd -- $ifaces; return;;
   esac
   if (( CURRENT == 2 )); then
@@ -244,10 +246,10 @@ _macora "$@"
             );
             out += "complete -c macora -n '__fish_use_subcommand' -a '(macora list 2>/dev/null)'\n";
             out += &format!(
-                "complete -c macora -n 'not __fish_use_subcommand' -a '{words}'
+                "complete -c macora -n 'not __fish_use_subcommand; and not __fish_prev_arg_in to' -a '{words}'
 "
             );
-            out += "complete -c macora -n 'not __fish_use_subcommand' -a '(macora list 2>/dev/null)'\n";
+            out += "complete -c macora -n 'not __fish_use_subcommand; and not __fish_prev_arg_in to' -a '(macora list 2>/dev/null)'\n";
             out += &format!(
                 "complete -c macora -n '__fish_prev_arg_in format' -a '{formats}'
 "
