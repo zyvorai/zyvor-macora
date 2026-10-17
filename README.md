@@ -208,7 +208,7 @@ MACORA uses macOS network services and locations rather than Linux NetworkManage
 | [docs/INTERACTIVE.md](docs/INTERACTIVE.md) | REPL and TUI guide |
 | [docs/UX.md](docs/UX.md) | Design and interaction notes |
 | [docs/TESTING.md](docs/TESTING.md) | What was run, how to repeat it, manual hardware checklist |
-| [docs/RELEASE.md](docs/RELEASE.md) | Tagging, signing, notarization, repo settings |
+| [docs/RELEASE.md](docs/RELEASE.md) | The release checklist: package, sign, notarize, verify, publish, Homebrew, site |
 | [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md) | Policy, how to help, history |
 
 ## Project layout
@@ -218,7 +218,8 @@ src/                  Dependency-free Rust CLI, parser, collector, probes, expor
 tests/                Scenario, interactive and feature tests; sanitized fixtures
 macos/Sources/        SwiftUI app (MacoraApp) and testable core (MacoraCore)
 macos/Tests/          Command validation, JSON, diagnosis and traffic tests
-scripts/              build-macos, package-mac, install-macos, smoke-cli, shots, PTY tests
+scripts/              build-macos, package-mac, install-macos, update-homebrew, smoke-cli,
+                      verify-cli, verify-diagnose (live checks vs ifconfig/ping/dig/curl), shots, PTY tests
 completions/ man/     bash, zsh and fish completions; macora(1)
 site/                 GitHub Pages landing page
 .github/              CI, release and Pages workflows; templates; Dependabot
@@ -226,7 +227,7 @@ site/                 GitHub Pages landing page
 
 ## Validation status
 
-Run on an Apple silicon Mac (the 0.4.1 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **166 Rust tests, 4 pseudo-terminal tests, 34 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **71-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
+Run on an Apple silicon Mac (the 0.4.1 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **166 Rust tests, 4 pseudo-terminal tests, 34 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **71-check read-only smoke test** plus independent live checks (`verify-cli.py`, 52 checks against `ifconfig`/`netstat`/`ipaddress`; `verify-diagnose.py`, 28 checks against `ping`/`dig`/`curl`/`system_profiler`), fresh Homebrew installs of the formula and the cask, and a notarized DMG/pkg install test. **Not yet run:** Intel Macs, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
 
 ## Roadmap
 

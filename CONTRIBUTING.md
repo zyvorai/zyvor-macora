@@ -29,6 +29,7 @@ cargo test --locked
 python3 scripts/check-contract.py && python3 scripts/test-tui-pty.py
 cargo build --release --locked && scripts/smoke-cli.sh
 swift test --package-path macos
+python3 scripts/verify-cli.py target/release/macora && python3 scripts/verify-diagnose.py target/release/macora   # live network
 ```
 
 Describe which Mac/OS workflows you actually exercised (see [docs/TESTING.md](docs/TESTING.md)). Add a test for new behavior; parsers are tested against sanitized fixtures in `tests/fixtures/`. **Sanitize fixtures**: replace real IPs, MACs, SSIDs and hostnames before committing.
