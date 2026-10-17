@@ -38,6 +38,8 @@ tar -C "$stage" -czf "$out/macora-$version-$arch-apple-darwin.tar.gz" "macora-$v
 app="$root/dist/Macora.app"
 mkdir -p "$stage/dmg"; ditto "$app" "$stage/dmg/Macora.app"; ln -s /Applications "$stage/dmg/Applications"
 hdiutil create -volname "Macora $version" -srcfolder "$stage/dmg" -ov -format UDZO "$out/Macora-$version.dmg" >/dev/null
+# Sign the disk image itself so Gatekeeper accepts it (the app inside is already signed).
+if [[ -n "${MACORA_SIGN_IDENTITY:-}" ]]; then codesign --force --timestamp --sign "$MACORA_SIGN_IDENTITY" "$out/Macora-$version.dmg"; fi
 pkg_args=(--component "$app" --install-location /Applications --version "$version")
 if [[ -n "${DEVELOPER_ID_INSTALLER:-}" ]]; then pkg_args+=(--sign "$DEVELOPER_ID_INSTALLER" --timestamp); fi
 pkgbuild "${pkg_args[@]}" "$out/Macora-$version.pkg" >/dev/null
