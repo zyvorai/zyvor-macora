@@ -9,7 +9,7 @@ Releases are cut by hand today: build, sign and notarize on a Mac that holds the
 3. **Push `main` and wait for `verify` to pass** on the exact commit you will tag.
 4. **Package, sign, notarize** (next section). Do not tag yet.
 5. **Verify the downloaded files** (section below).
-6. **Publish.** Create the release with the tag pointing at the verified commit. Disable the `release` workflow first and re-enable it afterwards, so a tag push cannot build unsigned files over the notarized ones.
+6. **Publish.** Create the release with the tag pointing at the verified commit. Disable the `release` workflow first and re-enable it afterwards, so a tag push cannot trigger a CI build that uploads unsigned files to the release.
    ```sh
    gh workflow disable release
    gh release create vX.Y.Z release/* --target "$(git rev-parse HEAD)" --title "MACORA X.Y.Z" -F notes.md
@@ -38,7 +38,7 @@ scripts/package-mac.sh X.Y.Z
 
 ### CI signing (optional)
 
-Add repository secrets: `MACOS_CERTS_P12` (base64 .p12 with the Developer ID Application and Installer identities), `MACOS_CERTS_PASSWORD`, `DEVELOPER_ID_APP`, `DEVELOPER_ID_INSTALLER`, and an App Store Connect API key: `NOTARY_KEY_P8` (base64), `NOTARY_KEY_ID`, `NOTARY_ISSUER`. The workflow refuses to overwrite a published DMG.
+Add repository secrets: `MACOS_CERTS_P12` (base64 .p12 with the Developer ID Application and Installer identities), `MACOS_CERTS_PASSWORD`, `DEVELOPER_ID_APP`, `DEVELOPER_ID_INSTALLER`, and an App Store Connect API key: `NOTARY_KEY_P8` (base64), `NOTARY_KEY_ID`, `NOTARY_ISSUER`.
 
 ## Verify the downloaded files
 
