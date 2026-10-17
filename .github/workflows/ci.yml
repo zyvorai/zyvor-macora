@@ -13,7 +13,7 @@ jobs:
         os: [macos-14, macos-15, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -29,7 +29,7 @@ jobs:
   native-app:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - name: Build and test native application
         run: ./scripts/build-macos.sh
@@ -37,14 +37,14 @@ jobs:
         run: ./target/release/macora doctor
       - name: Preserve app bundle permissions
         run: ditto -c -k --sequesterRsrc --keepParent dist/Macora.app dist/Macora-macOS.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Macora-macOS-build
           path: dist/Macora-macOS.zip
   msrv:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: '1.74'
