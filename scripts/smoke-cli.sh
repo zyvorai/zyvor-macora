@@ -46,7 +46,8 @@ run 0 report --format html --redact
 run 0 report --format md
 run 0 show --format prometheus
 run_ok_or_fail diagnose        # exits 1 when a layer fails, e.g. a VM gateway that drops ping
-if "$bin" diagnose --json 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); assert d["steps"] and d["verdict"]'; then pass=$((pass+1)); echo "ok    macora diagnose --json (structured)"; else fail=$((fail+1)); echo "FAIL  macora diagnose --json" >&2; fi
+diag_json="$("$bin" diagnose --json 2>/dev/null || true)"
+if printf '%s' "$diag_json" | python3 -c 'import sys,json; d=json.load(sys.stdin); assert d["steps"] and d["verdict"]'; then pass=$((pass+1)); echo "ok    macora diagnose --json (structured)"; else fail=$((fail+1)); echo "FAIL  macora diagnose --json" >&2; fi
 run 0 ping 127.0.0.1 --count 2
 run 0 trace 127.0.0.1
 run 0 completions bash
