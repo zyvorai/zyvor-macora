@@ -15,6 +15,11 @@ run() { # run <expected-exit> <args...>
   if [[ $rc -eq $want ]]; then pass=$((pass+1)); printf 'ok    macora %s\n' "$*"
   else fail=$((fail+1)); printf 'FAIL  macora %s (exit %s, wanted %s)\n%s\n' "$*" "$rc" "$want" "$out" >&2; fi
 }
+run_ok_or_fail() { # exit 0 or 1 both fine (environment-dependent), anything else is a crash
+  local out; out="$("$bin" "$@" 2>&1)"; local rc=$?
+  if [[ $rc -le 1 ]]; then pass=$((pass+1)); printf 'ok    macora %s (exit %s)\n' "$*" "$rc"
+  else fail=$((fail+1)); printf 'FAIL  macora %s (exit %s)\n%s\n' "$*" "$rc" "$out" >&2; fi
+}
 json() { # json <args...>: output must parse
   if "$bin" "$@" 2>/dev/null | python3 -m json.tool >/dev/null; then pass=$((pass+1)); printf 'ok    macora %s (valid JSON)\n' "$*"
   else fail=$((fail+1)); printf 'FAIL  macora %s (invalid JSON)\n' "$*" >&2; fi
@@ -32,7 +37,7 @@ run 0 routes
 run 0 dns
 run 0 path
 run 0 services
-run 0 wifi
+run_ok_or_fail wifi            # no Wi-Fi hardware on VMs
 run 0 neighbors
 run 0 sockets
 run 0 topology
@@ -40,7 +45,8 @@ run 0 report --redact
 run 0 report --format html --redact
 run 0 report --format md
 run 0 show --format prometheus
-run 0 diagnose
+run_ok_or_fail diagnose        # exits 1 when a layer fails, e.g. a VM gateway that drops ping
+if "$bin" diagnose --json 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); assert d["steps"] and d["verdict"]'; then pass=$((pass+1)); echo "ok    macora diagnose --json (structured)"; else fail=$((fail+1)); echo "FAIL  macora diagnose --json" >&2; fi
 run 0 ping 127.0.0.1 --count 2
 run 0 trace 127.0.0.1
 run 0 completions bash
