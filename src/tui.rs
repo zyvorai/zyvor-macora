@@ -166,10 +166,8 @@ impl Dashboard {
                 8 | 127 => {
                     self.input.pop();
                 }
-                32..=126 => {
-                    if self.input.len() < 180 {
-                        self.input.push(b as char);
-                    }
+                32..=126 if self.input.len() < 180 => {
+                    self.input.push(b as char);
                 }
                 _ => {}
             }

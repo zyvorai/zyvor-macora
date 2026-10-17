@@ -54,7 +54,11 @@ class TerminalTests(unittest.TestCase):
         output = self.read_until(master, b"\x1b[?1049l", 3)
         self.assertIn(b"\x1b[?1049l", output)
         self.assertEqual(process.wait(timeout=3), 0)
-        self.assertEqual(termios.tcgetattr(slave), saved)
+        # macOS sets PENDIN (0x20000000) itself when input is pending; it is not a TUI leak.
+        now = termios.tcgetattr(slave)
+        for attrs in (now, saved):
+            attrs[3] &= ~getattr(termios, "PENDIN", 0x20000000)
+        self.assertEqual(now, saved)
     def test_quit_restores_original_terminal(self):
         p,m,s,before,_ = self.launch(); self.finish(p,m,s,before,b"q")
     def test_ctrl_c_restores_original_terminal(self):
