@@ -74,7 +74,7 @@ macora tui                                # full-screen workspace
 open dist/Macora.app                      # or add --args --demo for simulated data
 ```
 
-Download `Macora-0.4.0.dmg` (drag to Applications) or `Macora-0.4.0.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. With Homebrew (the tap installs the notarized app, or just the CLI):
+Download `Macora-0.4.1.dmg` (drag to Applications) or `Macora-0.4.1.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. With Homebrew (the tap installs the notarized app, or just the CLI):
 
 ```sh
 brew install --cask zyvorai/tap/macora   # MACORA.app and `macora` on your PATH
@@ -226,7 +226,7 @@ site/                 GitHub Pages landing page
 
 ## Validation status
 
-Run on an Apple silicon Mac (the 0.4.0 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **166 Rust tests, 4 pseudo-terminal tests, 34 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **71-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
+Run on an Apple silicon Mac (the 0.4.1 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **166 Rust tests, 4 pseudo-terminal tests, 34 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **71-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
 
 ## Roadmap
 
