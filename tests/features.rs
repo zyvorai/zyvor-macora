@@ -342,6 +342,17 @@ fn words_translate_to_flags() {
         w(&["diff", "a", "b", "redact"]),
         ["diff", "a", "b", "--redact"]
     );
+    // A value word may lead: `macora color always`, `macora from FILE`.
+    assert_eq!(w(&["color", "always"]), ["show", "--color", "always"]);
+    assert_eq!(
+        w(&["from", "x.cap", "list"]),
+        ["show", "--from", "x.cap", "--list"]
+    );
+    assert_eq!(
+        w(&["all", "en0"]),
+        ["show", "--all", "--interface", "en0", "--all"]
+    );
+    assert_eq!(w(&["show", "en0"]), ["show", "--interface", "en0", "--all"]);
     // Existing dash flags and their values pass through untouched.
     assert_eq!(
         w(&["--format", "html", "report"]),

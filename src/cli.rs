@@ -177,7 +177,9 @@ pub fn words_to_flags(args: Vec<String>) -> Vec<String> {
             let rest: Vec<&String> = args[i..].iter().filter(|a| !a.starts_with('-')).collect();
             let known =
                 export::COMMANDS.contains(&t.as_str()) || ["help", "version"].contains(&t.as_str());
-            let modifier = flag_word(t).is_some() || FORMAT_WORDS.contains(&t.as_str());
+            let modifier = flag_word(t).is_some()
+                || FORMAT_WORDS.contains(&t.as_str())
+                || VALUE_WORDS.iter().any(|(w, _)| w == t);
             let name_like = t.len() <= 32
                 && t.chars()
                     .all(|c| c.is_ascii_alphanumeric() || "_.:-".contains(c));
@@ -232,6 +234,14 @@ pub fn words_to_flags(args: Vec<String>) -> Vec<String> {
                 out.push(args[i].clone());
                 i += 1;
             }
+        } else if cmd.as_deref() == Some("show")
+            && !out.iter().any(|x| x == "--interface")
+            && t.len() <= 32
+            && t.chars()
+                .all(|c| c.is_ascii_alphanumeric() || "_.:-".contains(c))
+        {
+            // `macora all en0`, `macora color always en0`: a name after the options is the interface.
+            out.extend(["--interface".to_string(), t.clone(), "--all".into()]);
         } else {
             out.push(t.clone());
         }
