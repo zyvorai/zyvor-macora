@@ -28,7 +28,7 @@ done
 iconutil -c icns "$iconset" -o "$app/Contents/Resources/Macora.icns"
 if [[ -n "${MACORA_SIGN_IDENTITY:-}" ]]; then
   codesign --force --options runtime --timestamp --sign "$MACORA_SIGN_IDENTITY" "$app/Contents/Resources/macora"
-  codesign --force --options runtime --timestamp --sign "$MACORA_SIGN_IDENTITY" "$app"
+  codesign --force --options runtime --timestamp --entitlements macos/Macora.entitlements --sign "$MACORA_SIGN_IDENTITY" "$app"
 else
   codesign --force --sign - "$app/Contents/Resources/macora"
   codesign --force --sign - "$app"
