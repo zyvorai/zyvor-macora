@@ -44,6 +44,8 @@ private enum Page: String, CaseIterable, Identifiable {
     @AppStorage("macora.density") private var density = "comfortable"
     @AppStorage("macora.maskAddresses") private var maskAddresses = false
     @State private var settings = false
+    @State private var shortcuts = false
+    @AppStorage("macora.onboarded") private var onboarded = false
     @State private var selectedInterface: NetworkInterface?
     @State private var rawOutput = ""
     @State private var loading = false
@@ -101,13 +103,16 @@ private enum Page: String, CaseIterable, Identifiable {
                 }.background(MacoraDesign.page(colorScheme))
                 HStack {
                     Circle().fill(store.error != nil ? .orange : store.paused ? .gray : .green).frame(width: 6, height: 6)
-                    Text(store.demo ? "Demo mode" : store.paused ? "Paused" : "Local telemetry")
+                    Text(store.demo ? "DEMO" : store.paused ? "PAUSED" : "LIVE").font(.system(size: 9, weight: .bold)).padding(.horizontal, 6).padding(.vertical, 2).background((store.demo ? Color.orange : store.paused ? Color.gray : Color.green).opacity(0.18), in: Capsule())
                     if let date = store.lastUpdated { Text("· Updated \(date.formatted(date: .omitted, time: .standard))") }
                     Spacer(); Text("macOS native · Apache 2.0" + (maskAddresses ? " · IP/MAC masked" : ""))
                 }.font(.system(size: 10)).foregroundStyle(.secondary).padding(.horizontal, 26).padding(.vertical, 10)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .macoraPalette)) { _ in palette = true }
+        .onReceive(NotificationCenter.default.publisher(for: .macoraShortcuts)) { _ in shortcuts = true }
+        .onReceive(NotificationCenter.default.publisher(for: .macoraDiagnose)) { _ in page = .doctor }
+        .sheet(isPresented: $shortcuts) { ShortcutSheet() }
         .sheet(isPresented: $palette, onDismiss: {
             if let command = pendingCommand { pendingCommand = nil; performCommand(command) }
         }) { CommandPalette { command in pendingCommand = command; palette = false } }
@@ -148,6 +153,11 @@ private enum Page: String, CaseIterable, Identifiable {
                     Label(store.demo ? "Demo data" : "On this Mac", systemImage: store.demo ? "play.rectangle" : "desktopcomputer").font(.caption).foregroundStyle(.secondary)
                 }.padding(.top, 8)
             }.padding(.vertical, 8)
+            if !onboarded {
+                OnboardingCard(dismissed: $onboarded) { target in
+                    switch target { case "palette": palette = true; case "shortcuts": shortcuts = true; default: page = .doctor }
+                }
+            }
             VStack(alignment: .leading, spacing: 22) {
                 HStack { Text("Your connection stack").font(.title2.bold()); Spacer(); Text(store.paused ? "Monitoring paused" : "Local collection").font(.caption).foregroundStyle(.secondary) }
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 185), spacing: 14)], spacing: 14) {
@@ -242,6 +252,13 @@ private enum Page: String, CaseIterable, Identifiable {
         }
     }
     private var doctorView: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            DiagnosisWizard()
+            Divider()
+            localFindings
+        }
+    }
+    private var localFindings: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack { Text("Understand before you troubleshoot.").font(.title2.bold()); Spacer(); Button("Run again") { Task { await store.diagnose() } } }
             Text("Local checks explain self-assigned addresses, inactive bridges, IPv6 rotation and low tunnel MTUs. No external endpoint is contacted.").foregroundStyle(.secondary)
@@ -302,6 +319,9 @@ private enum Page: String, CaseIterable, Identifiable {
                     Spacer(); Circle().fill(i.active ? .green : .gray).frame(width: 7, height: 7)
                 }
                 Text(store.present(i.addresses.first(where: { !$0.address.contains(":") })?.display ?? i.addresses.first?.display ?? "No address assigned")).font(.system(size: 13, weight: .medium, design: .monospaced)).lineLimit(1).textSelection(.enabled)
+                if store.rateHistory.values(i.name).count >= 2 {
+                    Sparkline(values: store.rateHistory.normalized(i.name)).frame(height: 26)
+                }
                 HStack { Text(i.active ? "Link active" : i.up ? "Enabled · idle" : "Down"); Spacer(); Text("MTU \(i.mtu.map(String.init) ?? "—")") }.font(.caption).foregroundStyle(.secondary)
             }.padding(density == "compact" ? 12 : 18).frame(maxWidth: .infinity, alignment: .leading).card()
         }.buttonStyle(.plain)
@@ -337,6 +357,8 @@ private enum Page: String, CaseIterable, Identifiable {
         case "export": Task { await store.export(redact: true) }
         case "baseline": store.captureBaseline(); page = .compare
         case "preferences": preferences = true
+        case "diagnose": page = .doctor; Task { await store.runDiagnosis() }
+        case "shortcuts": shortcuts = true
         default: break
         }
     }

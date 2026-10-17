@@ -1,7 +1,7 @@
 import Foundation
 
 public enum ProcessRunner {
-    public static func run(_ executable: String, _ arguments: [String], timeout: Double = 8) async throws -> String {
+    public static func run(_ executable: String, _ arguments: [String], timeout: Double = 8, acceptedStatuses: Set<Int32> = [0]) async throws -> String {
         try await Task.detached(priority: .utility) {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: executable)
@@ -21,7 +21,7 @@ public enum ProcessRunner {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             process.waitUntilExit()
             let output = String(decoding: data, as: UTF8.self)
-            guard process.terminationStatus == 0 else {
+            guard acceptedStatuses.contains(process.terminationStatus) else {
                 throw MacoraError.message(output.isEmpty ? "Command failed or timed out: \(URL(fileURLWithPath: executable).lastPathComponent)" : output)
             }
             return output

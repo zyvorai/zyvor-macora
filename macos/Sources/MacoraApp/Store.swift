@@ -18,6 +18,10 @@ import UniformTypeIdentifiers
     @Published var baselineLabel = "Session start"
     @Published var baselineDate: Date?
     @Published var timeline: [NetworkTimelineEvent] = []
+    @Published var diagnosis: DiagnosisReport?
+    @Published var diagnosing = false
+    @Published var rateHistory = RateHistory()
+    private var demoTick = 0
     private var monitor: Task<Void, Never>?
     var comparison: [ConfigurationChange] {
         guard let baseline, let snapshot else { return [] }
@@ -85,13 +89,21 @@ import UniformTypeIdentifiers
                 timeline.insert(contentsOf: changes.map { NetworkTimelineEvent(date: now, change: $0) }, at: 0)
                 if timeline.count > 200 { timeline.removeLast(timeline.count - 200) }
                 var rx = 0.0, tx = 0.0
+                demoTick += 1
                 // Sum physical network adapters only: bridges and tunnels can double count traffic.
                 for i in next.interfaces where i.group == "Network" {
                     if let a = old.interfaces.first(where: { $0.name == i.name })?.counters, let b = i.counters {
                         let r = Traffic.rates(previous: a, current: b, elapsed: now.timeIntervalSince(at)); rx += r.0; tx += r.1
+                        rateHistory.append(i.name, r.0 + r.1)
                     }
                 }
-                if next.interfaces.contains(where: { $0.group == "Network" && $0.counters != nil }) { history.append(TrafficPoint(date: now, rx: rx, tx: tx)) }
+                if demo && rx == 0 && tx == 0 {
+                    // The demo fixture has constant counters; draw a clearly simulated wave so the UI has something to show.
+                    let t = Double(demoTick)
+                    rx = 2_400_000 * (0.55 + 0.45 * sin(t / 3)); tx = 480_000 * (0.5 + 0.5 * sin(t / 4 + 1))
+                    rateHistory.append("en0", rx + tx)
+                }
+                if demo || next.interfaces.contains(where: { $0.group == "Network" && $0.counters != nil }) { history.append(TrafficPoint(date: now, rx: rx, tx: tx)) }
                 if history.count > 90 { history.removeFirst(history.count - 90) }
             }
             previous = next; previousTime = now; snapshot = next; lastUpdated = now; error = nil
@@ -112,6 +124,30 @@ import UniformTypeIdentifiers
             let text = try await ProcessRunner.run(cli, ["doctor", "--json"])
             findings = try JSONDecoder().decode([String: [String]].self, from: Data(text.utf8))["findings"] ?? []
         } catch { self.actionError = error.localizedDescription }
+    }
+    func runDiagnosis() async {
+        guard !diagnosing else { return }
+        diagnosing = true
+        defer { diagnosing = false }
+        if demo {
+            try? await Task.sleep(for: .milliseconds(600))
+            diagnosis = DiagnosisReport(steps: [
+                .init(step: "Link", status: .ok, detail: "Simulated: an active adapter has a routable IPv4 address"),
+                .init(step: "Gateway", status: .ok, detail: "Simulated: 0% loss, 3.7 ms average"),
+                .init(step: "Internet", status: .ok, detail: "Simulated: connected in 9 ms"),
+                .init(step: "DNS", status: .warn, detail: "Simulated: example.com resolved in 412 ms"),
+                .init(step: "MTU", status: .ok, detail: "Simulated: 1500-byte packets reach the gateway")
+            ], verdict: "Simulated result. Connected, but DNS is slow. A different resolver may speed up page loads.")
+            return
+        }
+        do {
+            // diagnose exits 1 when a layer fails but still prints the full report.
+            let text = try await ProcessRunner.run(cli, ["diagnose", "--json"], timeout: 45, acceptedStatuses: [0, 1])
+            diagnosis = try DiagnosisReport.decode(text)
+        } catch { actionError = error.localizedDescription }
+    }
+    func summary(redact: Bool) -> String {
+        StatusSummary.text(snapshot: snapshot, rx: latest?.rx, tx: latest?.tx, report: diagnosis, redact: redact)
     }
     func apply(_ plan: CommandPlan) async throws {
         guard !demo else { throw MacoraError.message("Changes are disabled in demo mode") }

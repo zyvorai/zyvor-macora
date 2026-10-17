@@ -47,3 +47,57 @@ final class WorkspaceTests: XCTestCase {
         XCTAssertThrowsError(try NetworkSnapshot.decode(JSONSerialization.data(withJSONObject: object)))
     }
 }
+
+final class DiagnosisTests: XCTestCase {
+    private let json = """
+    {"steps":[{"step":"Link","status":"OK","detail":"ok"},{"step":"Gateway","status":"WARN","detail":"2% loss"},{"step":"Internet","status":"SKIP","detail":"Skipped"}],"verdict":"Connected, but with packet loss."}
+    """
+    func testDecodesCliReportAndFindsWorstStatus() throws {
+        let report = try DiagnosisReport.decode(json)
+        XCTAssertEqual(report.steps.map(\.status), [.ok, .warn, .skip])
+        XCTAssertEqual(report.worst, .warn)
+        XCTAssertEqual(report.steps[1].explanation, "Can this Mac reach your router?")
+    }
+    func testFailBeatsWarn() {
+        let report = DiagnosisReport(steps: [.init(step: "Link", status: .warn, detail: ""), .init(step: "Gateway", status: .fail, detail: "")], verdict: "x")
+        XCTAssertEqual(report.worst, .fail)
+    }
+    func testRejectsMalformedReports() {
+        XCTAssertThrowsError(try DiagnosisReport.decode("{\"steps\":[],\"verdict\":\"x\"}"))
+        XCTAssertThrowsError(try DiagnosisReport.decode("{\"steps\":[{\"step\":\"Link\",\"status\":\"BOGUS\",\"detail\":\"\"}],\"verdict\":\"x\"}"))
+        XCTAssertThrowsError(try DiagnosisReport.decode("not json"))
+    }
+    func testRateHistoryIsBoundedAndIgnoresBadValues() {
+        var history = RateHistory(limit: 3)
+        for v in [1.0, 2, 3, 4] { history.append("en0", v) }
+        history.append("en0", .nan); history.append("en0", -5); history.append("en0", .infinity)
+        XCTAssertEqual(history.values("en0"), [2, 3, 4])
+        XCTAssertEqual(history.normalized("en0"), [0.5, 0.75, 1])
+        XCTAssertEqual(history.values("missing"), [])
+        history.removeAll()
+        XCTAssertTrue(history.values("en0").isEmpty)
+    }
+    func testFlatZeroSeriesStaysFlat() {
+        var history = RateHistory()
+        history.append("en0", 0); history.append("en0", 0)
+        XCTAssertEqual(history.normalized("en0"), [0, 0])
+    }
+    func testSummaryMasksAddressesWhenAsked() throws {
+        let object: [String: Any] = ["schema_version": 1, "interfaces": [["name": "en0", "label": "Wi-Fi", "group": "Network", "up": true, "active": true, "mtu": 1500, "mac": "02:00:00:00:00:08", "media": "autoselect", "status": "active", "flags": [], "options": [], "members": [], "addresses": [["address": "192.168.1.8", "prefix": 24, "scope": "private", "attributes": []]], "counters": ["rx_bytes": 1, "tx_bytes": 1]]], "warnings": []]
+        let snapshot = try NetworkSnapshot.decode(JSONSerialization.data(withJSONObject: object))
+        XCTAssertTrue(StatusSummary.text(snapshot: snapshot, rx: 1500, tx: 0, report: nil, redact: false).contains("192.168.1.8/24"))
+        let masked = StatusSummary.text(snapshot: snapshot, rx: nil, tx: nil, report: nil, redact: true)
+        XCTAssertFalse(masked.contains("192.168"))
+        XCTAssertTrue(masked.contains("<IPv4>"))
+        XCTAssertEqual(StatusSummary.text(snapshot: nil, rx: nil, tx: nil, report: nil, redact: true), "MACORA: no network data yet.")
+    }
+    func testPaletteHasDiagnoseAndShortcuts() {
+        XCTAssertTrue(WorkspaceCatalog.filtered("slow").contains { $0.id == "diagnose" })
+        XCTAssertTrue(WorkspaceCatalog.filtered("keyboard").contains { $0.id == "shortcuts" })
+    }
+    func testProcessRunnerAcceptsDeclaredNonZeroStatus() async throws {
+        let ok = try await ProcessRunner.run("/bin/sh", ["-c", "echo hi; exit 1"], acceptedStatuses: [0, 1])
+        XCTAssertEqual(ok.trimmingCharacters(in: .whitespacesAndNewlines), "hi")
+        do { _ = try await ProcessRunner.run("/bin/sh", ["-c", "exit 1"]); XCTFail("expected failure") } catch {}
+    }
+}

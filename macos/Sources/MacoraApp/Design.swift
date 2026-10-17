@@ -15,6 +15,7 @@ enum MacoraDesign {
     @AppStorage("macora.density") private var density = "comfortable"
     @AppStorage("macora.refreshSeconds") private var refreshSeconds = 2.0
     @AppStorage("macora.maskAddresses") private var maskAddresses = false
+    @AppStorage("macora.accent") private var accent = "blue"
     @EnvironmentObject private var store: NetworkStore
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -22,13 +23,14 @@ enum MacoraDesign {
             Text("Display preferences stay on this Mac. They do not change network settings.").foregroundStyle(.secondary)
             Form {
                 Picker("Appearance", selection: $appearance) { Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark") }
+                Picker("Accent color", selection: $accent) { ForEach(AccentChoice.allCases) { c in Label(c.title, systemImage: "circle.fill").foregroundStyle(c.color).tag(c.rawValue) } }
                 Picker("Density", selection: $density) { Text("Comfortable").tag("comfortable"); Text("Compact").tag("compact") }
                 Picker("Refresh interval", selection: $refreshSeconds) { Text("1 second").tag(1.0); Text("2 seconds").tag(2.0); Text("5 seconds").tag(5.0); Text("10 seconds").tag(10.0) }
                 Toggle("Mask modeled IP and MAC addresses in workspace views", isOn: $maskAddresses)
             }.formStyle(.grouped)
             Text("Masking covers modeled addresses and MACs. Raw DNS, routes, socket inspectors and tool results remain unredacted.").font(.caption).foregroundStyle(.secondary)
-            Button("Clear in-memory traffic and timeline") { store.history.removeAll(); store.timeline.removeAll() }
-        }.padding(28).frame(width: 640, height: 450)
+            Button("Clear in-memory traffic and timeline") { store.history.removeAll(); store.rateHistory.removeAll(); store.timeline.removeAll() }
+        }.padding(28).frame(width: 640, height: 490)
             .onChange(of: maskAddresses) { _, _ in store.objectWillChange.send() }
     }
 }

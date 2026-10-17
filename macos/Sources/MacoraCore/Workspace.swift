@@ -19,6 +19,8 @@ public enum WorkspaceCatalog {
         .init(id: "DNS", title: "Inspect DNS", detail: "Every scoped system resolver", symbol: "globe"),
         .init(id: "Neighbors", title: "Inspect neighbors", detail: "ARP and IPv6 neighbor tables", symbol: "laptopcomputer.and.iphone"),
         .init(id: "Connections", title: "Inspect connections", detail: "User-visible TCP and UDP sockets", symbol: "cable.connector"),
+        .init(id: "diagnose", title: "Why is my network slow?", detail: "Walk link, router, internet, DNS and MTU", symbol: "waveform.path.ecg"),
+        .init(id: "shortcuts", title: "Keyboard shortcuts", detail: "Show every shortcut", symbol: "keyboard"),
         .init(id: "Diagnostics", title: "Run diagnostics", detail: "Local evidence without an invented health score", symbol: "stethoscope"),
         .init(id: "Change History", title: "Open change timeline", detail: "Observed changes and successful actions", symbol: "clock.arrow.circlepath"),
         .init(id: "configure", title: "Configure a service", detail: "Preview before authorization", symbol: "lock.shield"),
