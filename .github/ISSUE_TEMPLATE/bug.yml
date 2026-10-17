@@ -1,0 +1,25 @@
+name: Bug report
+description: Something is wrong or confusing
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: "What you expected and what you saw. Redact IPs/MACs (`--redact`) and never paste a Wi-Fi password."
+    validations: { required: true }
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options: [macora CLI, TUI / interactive, Native app, diagnose / ping / trace, Export (md/html/prometheus), Installer / packaging, Docs]
+    validations: { required: true }
+  - type: input
+    id: platform
+    attributes: { label: "macOS version and chip", placeholder: "macOS 15.2, Apple silicon" }
+  - type: input
+    id: version
+    attributes: { label: "MACORA version (`macora --version`)", placeholder: "0.3.0" }
+  - type: textarea
+    id: repro
+    attributes: { label: Steps to reproduce, description: "Commands you ran, e.g. `macora diagnose --json`." }

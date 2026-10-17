@@ -35,7 +35,12 @@ private enum Page: String, CaseIterable, Identifiable {
 }
 @MainActor struct ContentView: View {
     @EnvironmentObject private var store: NetworkStore
-    @State private var page: Page? = .overview
+    @State private var page: Page? = {
+        // `--page Diagnostics` opens a page directly; used for documentation screenshots.
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "--page"), args.indices.contains(i + 1), let p = Page(rawValue: args[i + 1]) { return p }
+        return .overview
+    }()
     @State private var search = ""
     @State private var palette = false
     @State private var preferences = false
@@ -123,6 +128,7 @@ private enum Page: String, CaseIterable, Identifiable {
             inspectorRequest = UUID(); rawOutput = ""; loading = false
             if let command = page?.command { await inspect(command) }
             if page == .doctor { await store.diagnose() }
+            if page == .doctor, store.demo, store.diagnosis == nil { await store.runDiagnosis() }
         }
     }
     private var header: some View {
@@ -136,7 +142,7 @@ private enum Page: String, CaseIterable, Identifiable {
             Button { preferences = true } label: { Image(systemName: "circle.lefthalf.filled") }.help("Workspace preferences")
             Button { store.paused.toggle() } label: { Image(systemName: store.paused ? "play.fill" : "pause.fill") }.help("Pause or resume collection")
             Button { Task { await store.refresh() } } label: { Image(systemName: "arrow.clockwise") }.help("Refresh")
-            Menu { Button("Export redacted snapshot…") { Task { await store.export(redact: true) } }; Button("Export full snapshot…") { Task { await store.export(redact: false) } } } label: { Image(systemName: "square.and.arrow.up") }
+            Menu { Button("Export redacted snapshot…") { Task { await store.export(redact: true) } }; Button("Export full snapshot…") { Task { await store.export(redact: false) } } } label: { Image(systemName: "square.and.arrow.up") }.menuStyle(.button).menuIndicator(.hidden).fixedSize().help("Export")
             Button { settings = true } label: { Label("Configure", systemImage: "slider.horizontal.3") }.buttonStyle(.borderedProminent).disabled(store.demo)
         }.padding(.horizontal, 26).padding(.vertical, 18).background(.bar)
     }

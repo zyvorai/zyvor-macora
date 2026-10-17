@@ -1,12 +1,14 @@
-name: macOS verification
+name: verify
 on:
   push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read
 jobs:
   rust:
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-14, macos-15, ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -16,11 +18,14 @@ jobs:
         with:
           components: rustfmt, clippy
       - run: cargo fmt --check
-      - run: cargo clippy --all-targets --offline --locked -- -D warnings
-      - run: cargo test --offline --locked
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
       - run: python3 scripts/check-contract.py
       - run: python3 scripts/test-tui-pty.py
-      - run: cargo build --release --offline --locked
+      - run: cargo build --release --locked
+      - name: CLI smoke test (read-only)
+        if: runner.os == 'macOS'
+        run: scripts/smoke-cli.sh
   native-app:
     runs-on: macos-14
     steps:
@@ -28,8 +33,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Build and test native application
         run: ./scripts/build-macos.sh
-      - name: Inspect live macOS interface JSON
-        run: ./target/release/macora --json --all | python3 -m json.tool
       - name: Read-only native diagnostics
         run: ./target/release/macora doctor
       - name: Preserve app bundle permissions
@@ -45,4 +48,4 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: '1.74'
-      - run: cargo test --offline --locked
+      - run: cargo test --locked

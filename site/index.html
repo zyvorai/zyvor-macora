@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MACORA — your Mac's network, made clear</title>
+<meta name="description" content="A native SwiftUI workspace, Rust CLI and interactive terminal that explain your Mac's network. Read-only by default, zero dependencies, Apache 2.0.">
+<style>
+:root{--bg:#fff;--fg:#1d1d1f;--mut:#6e6e73;--card:#f5f5f7;--line:#d2d2d7;--acc:#0071e3}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#f5f5f7;--mut:#a1a1a6;--card:#1c1c1e;--line:#38383a;--acc:#2997ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+nav{display:flex;gap:20px;align-items:center;padding:18px 0;font-size:15px}
+nav b{margin-right:auto;letter-spacing:.14em}
+.hero{text-align:center;padding:56px 0 32px}
+.eyebrow{color:var(--acc);font-weight:700;letter-spacing:.18em;font-size:13px}
+h1{font-size:clamp(36px,7vw,64px);line-height:1.05;margin:14px 0}
+.lead{color:var(--mut);max-width:640px;margin:0 auto 26px;font-size:20px}
+.btn{display:inline-block;background:var(--acc);color:#fff;padding:12px 24px;border-radius:999px;font-weight:600}
+.btn:hover{text-decoration:none;opacity:.9}
+.shot{width:100%;border-radius:14px;border:1px solid var(--line);margin-top:36px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:48px 0}
+.card{background:var(--card);border-radius:18px;padding:22px}
+.card h3{margin:0 0 6px;font-size:18px}.card p{margin:0;color:var(--mut);font-size:15px}
+pre{background:var(--card);border-radius:14px;padding:18px;overflow:auto;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+h2{font-size:30px;margin:56px 0 12px}
+footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(--line);margin-top:56px}
+@media(prefers-reduced-motion:no-preference){.card{transition:transform .2s}.card:hover{transform:translateY(-2px)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><b>MACORA</b><a href="https://github.com/zyvorai/zyvor-macora">GitHub</a><a href="https://github.com/zyvorai/zyvor-macora/releases">Download</a><a href="https://github.com/zyvorai/zyvor-macora/blob/main/SECURITY.md">Security</a></nav>
+<section class="hero">
+<div class="eyebrow">BY ZYVOR AI LABS</div>
+<h1>Your Mac’s network,<br>made clear.</h1>
+<p class="lead">A native SwiftUI workspace, a Rust CLI and an interactive terminal that explain what your network is doing, and why it feels slow. Read-only by default. No dependencies. No telemetry.</p>
+<a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases">Download for Mac</a>
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="docs/ux/native-dark-diagnostics.png">
+<img class="shot" src="docs/ux/native-light-diagnostics.png" alt="MACORA diagnosis wizard walking link, gateway, internet, DNS and MTU, shown on simulated demo data">
+</picture>
+<p style="color:var(--mut);font-size:14px">Simulated demo data. Not a screenshot of a real network.</p>
+</section>
+<div class="grid">
+<div class="card"><h3>Why is it slow?</h3><p>One check walks link → router → internet → DNS → MTU and stops at the first real problem, in plain language.</p></div>
+<div class="card"><h3>Explained, not dumped</h3><p>Interfaces grouped and annotated: scoped IPv6, temporary addresses, bridges, tunnels, flags.</p></div>
+<div class="card"><h3>Native and terminal</h3><p>SwiftUI app with a menu-bar panel, plus <code>macora</code>, an interactive REPL and a full-screen TUI.</p></div>
+<div class="card"><h3>Share safely</h3><p>Redact IPs and MACs, export Markdown, HTML or Prometheus text. Snapshots are private by default.</p></div>
+<div class="card"><h3>Read-only</h3><p>Nothing changes your settings without a preview and an explicit confirmation.</p></div>
+<div class="card"><h3>Zero dependencies</h3><p>No external Rust crates or Swift packages. Apache 2.0.</p></div>
+</div>
+<h2>Try it</h2>
+<pre>git clone https://github.com/zyvorai/zyvor-macora.git &amp;&amp; cd zyvor-macora
+./scripts/install-macos.sh ~/.local   # CLI, man page, completions
+macora diagnose
+macora tui
+./scripts/build-macos.sh &amp;&amp; open dist/Macora.app</pre>
+<footer>Copyright 2026 Zyvor AI Labs · Apache License 2.0 · macOS 14+ · Not affiliated with Apple.</footer>
+</div>
+</body>
+</html>

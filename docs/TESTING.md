@@ -1,18 +1,20 @@
 # Validation and hardware acceptance
 
-## Executed for this source package
+## Executed for 0.3.0
 
-- Rust 1.75 offline compilation in a Linux container.
-- 40 Rust tests: 3 parser unit tests, 18 prior scenarios and 19 new interactive/TUI/report tests.
-- Four real pseudo-terminal tests: normal and Ctrl-C restoration, narrow terminal handling, and arrow/palette/pause/manual refresh routing.
-- Scenarios cover scoped IPv6, temporary/deprecated state, bridge members, six utun interfaces, inactive-vs-running state, hardware port mapping, JSON escaping, terminal controls, redaction, grouping, counter reset/elapsed time, snapshot diff, subnet /0 /24 /31 /32, CLI argument validation, mutation plan checks, capture permissions/no-overwrite, offline apply rejection, and local TCP success/refusal.
-- Rustfmt and Clippy with warnings denied.
-- Swift source parsing with the tree-sitter Swift grammar (syntax only; not SDK type checking).
-- Swift/CLI JSON fixture contract and Info.plist structure checks.
+Run on an Apple silicon Mac (macOS 27.x, Rust 1.98, Swift 6):
 
-## Not executed here
+- 51 Rust tests (parser, scenarios, interactive/TUI, and 11 new feature tests: ping parsing, verdict logic, host validation, HTML/Prometheus output, completions, `--format` validation).
+- 4 pseudo-terminal tests (terminal restoration, palette, pause/refresh).
+- rustfmt and Clippy with warnings denied.
+- 27 Swift tests, including diagnosis decoding, sparkline history and redacted summaries.
+- `scripts/smoke-cli.sh`: 44 read-only checks of the release binary against the live Mac (valid JSON/NDJSON, snapshot mode 0600 and no-overwrite, error exits).
+- `scripts/build-macos.sh` and `scripts/package-mac.sh`: app build, DMG, pkg, tarball and verified checksums.
+- Screenshots in `docs/ux/` captured from the running app in `--demo` mode.
 
-The build environment is Linux. It has no SwiftUI/AppKit SDK, macOS authorization service, Wi-Fi hardware, or CoreWLAN runtime. Swift compilation/tests and native UI/hardware workflows have **not** been run. The test cases and CI below are supplied to make those checks repeatable on a Mac, not evidence of a completed macOS run.
+## Not executed
+
+Intel Macs, notarization, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. Use the manual checklist below for those.
 
 ## Repeat locally
 
@@ -22,6 +24,7 @@ cargo clippy --all-targets --offline --locked -- -D warnings
 cargo test --offline --locked
 python3 scripts/check-contract.py
 python3 scripts/test-tui-pty.py
+scripts/smoke-cli.sh
 swift test --package-path macos
 ./scripts/build-macos.sh
 open dist/Macora.app

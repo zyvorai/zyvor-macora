@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes: { label: What problem are you trying to solve, description: "Describe the situation, not only the solution." }
+    validations: { required: true }
+  - type: textarea
+    id: idea
+    attributes: { label: What would you like MACORA to do }
+  - type: dropdown
+    id: readonly
+    attributes:
+      label: Does it need to change system settings?
+      description: "Read-only features are much easier to accept. Anything that mutates needs a preview and explicit authorization."
+      options: ["No, read-only", "Yes, with preview and confirmation"]

@@ -1,63 +1,122 @@
 <div align="center">
 
 # MACORA
+
+[![verify](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml/badge.svg)](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-0071e3)](LICENSE)
+[![macOS](https://img.shields.io/badge/macOS-14%2B-2997ff)](docs/TESTING.md)
+[![Rust](https://img.shields.io/badge/rust-1.74%2B-orange)](Cargo.toml)
+[![Dependencies](https://img.shields.io/badge/dependencies-0-63e6be)](Cargo.toml)
+
+![MACORA diagnosis wizard on simulated demo data](docs/ux/native-dark-diagnostics.png)
+
 ### Your Mac’s network, made clear.
-**Native SwiftUI workspace + Rust CLI + interactive terminal. Built by Zyvor AI Labs.**
 
-macOS 14+ · Apple Silicon & Intel source builds · Apache 2.0 · Local-first
+**A native SwiftUI workspace, a Rust CLI and an interactive terminal that explain what your network is doing, and why it feels slow.** Interfaces grouped and annotated, a one-click diagnosis, live traffic, scoped DNS and routes, and deliberate configuration controls. Built by Zyvor AI Labs.
 
-![Design preview — simulated values, not a native app screenshot](docs/design-preview.png)
+**Read-only by default** · **Zero dependencies** · **Native + CLI + TUI** · **Redact before you share** · **Local-first, no telemetry**
+
+🌐 **[Site](https://zyvorai.github.io/zyvor-macora/)** · 🚀 **[Quickstart](#quickstart)** · 🩺 **[Diagnose](#why-is-my-network-slow)** · 🔒 **[Security](SECURITY.md)** · 📖 **[Docs](#documentation-map)** · 🤝 **[Contributing](CONTRIBUTING.md)**
 
 </div>
 
-MACORA replaces a wall of `ifconfig` output with interface groups, explanations and a native network management workspace. Its Rust collector and terminal workspace preserve scoped IPv6, deprecated/temporary addresses, bridge members, flags and offload options. Its SwiftUI app presents adapters, live traffic, scoped DNS, routes and connection diagnostics alongside deliberate network configuration controls.
+## Why MACORA
 
-The illustration above is a **design preview with simulated values**. The app itself starts with live collection; `--demo` is a separate, clearly labeled mode. This project is new source code, not a fork of Vytrix. The design takes broad inspiration from Vytrix’s sidebar/card layout without copying its code or assets.
+| When this happens | MACORA gives you |
+| --- | --- |
+| `ifconfig` prints a wall of 17 interfaces and you only care about Wi-Fi | Interfaces **grouped** (Network, Bridges, Tunnels, System, Loopback) with each flag, scoped IPv6 address and bridge member explained |
+| "The internet is slow" and you do not know where to look | **`macora diagnose`**: link → router → internet → DNS → MTU, stopping at the first real problem, in plain language |
+| You need to send someone your network details | **`--redact`** masks IPs and MACs; export Markdown, HTML or JSON; snapshots are private (0600) and never overwritten |
+| "What changed since it last worked?" | Capture a baseline, then **diff** field by field, in the app or `macora diff` |
+| You want it in a dashboard or a script | `watch --format prometheus`, NDJSON, `--json` everywhere, shell completions, Shortcuts actions |
+| You will run it on a machine you care about | **Read-only**: nothing changes without a preview and an explicit `--apply` or authorization dialog |
 
-## New in 0.2
+## See it
 
-**A Nuvora-inspired native workspace and GuestKit-style interactive exploration, implemented for Mac networking.**
+![Tour of the app: overview, interfaces and the diagnosis wizard in light and dark](docs/ux/macora-demo.gif)
 
-- Spacious light/dark overview, connection stage and metric band; Cmd-K fuzzy command palette.
-- Menu bar state/rates, pinned adapters, saved appearance/density/polling preferences and workspace IP/MAC masking.
-- Observed bridge topology, JSON baseline import, field-by-field comparison and an in-memory change timeline.
-- Explicit TCP/subnet/DNS/report tools and a practical investigation guide.
-- `macora interactive` / `repl` with cached capture, selection, search, history, plans and private exports.
-- `macora tui` with six pages, keyboard navigation, filtering, favorites, sorting, pause, manual refresh, baseline drift and safe terminal restoration.
-- New `topology`, `report` and `resolve` commands. No new runtime package dependencies.
+*A slideshow of real captures of the app running its built-in **simulated demo data** (`--demo`). Values are not from a real network.*
 
-The source ZIP also includes `UPGRADE-v0.2.0.patch`, checked against the 0.1.0 source. The patch excludes generated archive checksum metadata.
+| Overview, light | Overview, dark |
+| --- | --- |
+| ![Overview, light](docs/ux/native-light-overview.png) | ![Overview, dark](docs/ux/native-dark-overview.png) |
 
-See [CHANGELOG](CHANGELOG.md), [interactive guide](docs/INTERACTIVE.md) and [UX/reference notes](docs/UX.md).
+| Diagnosis, light | Interfaces with sparklines, dark |
+| --- | --- |
+| ![Diagnosis, light](docs/ux/native-light-diagnostics.png) | ![Interfaces, dark](docs/ux/native-dark-interfaces.png) |
 
-## Build on your Mac
+![Actual Rust terminal rendering against the sanitized fixture](docs/tui-preview.png)
 
-Install Rust and Xcode Command Line Tools, then:
+## Quickstart
 
-```sh
-# From the unzipped project directory:
-./scripts/build-macos.sh
-open dist/Macora.app
-```
-
-The script runs Rust and Swift tests, builds the CLI and native SwiftUI executable, bundles the collector, and ad-hoc signs both. Its output is a **local development build**; it is not notarized. Set `MACORA_SIGN_IDENTITY` to your Developer ID identity to sign a distribution build; notarization is a separate release step. No Mac App Store compatibility is claimed: configuration currently uses administrator-authorized AppleScript rather than a sandboxed helper.
-
-CLI only:
+Needs macOS 14+, the Xcode command line tools and Rust.
 
 ```sh
-cargo install --path . --locked --offline
-macora
-macora --all
-macora explain en0
-macora watch --interval 1
-macora doctor
-macora interactive
-macora tui --interval 1
+git clone https://github.com/zyvorai/zyvor-macora.git && cd zyvor-macora
+
+./scripts/install-macos.sh ~/.local     # CLI + man page + completions (PREFIX optional)
+macora diagnose                           # why is my network slow?
+macora tui                                # full-screen workspace
+
+./scripts/build-macos.sh                  # tests, then dist/Macora.app (ad-hoc signed)
+open dist/Macora.app                      # or add --args --demo for simulated data
 ```
 
-There are **zero external Rust crates and zero external Swift packages**. SwiftUI, Charts, CoreWLAN, CoreLocation and AppKit are Apple system frameworks. No node server, webview or daemon is required. The Rust parser/tests can run on Linux for development; the product and live networking features target **macOS only**.
+Prebuilt `Macora-X.Y.Z.dmg` / `.pkg` and a CLI tarball, each with a `.sha256`, are produced by the [release workflow](.github/workflows/release.yml) when a version tag is published. Unless the release notes say otherwise they are **not notarized**: open **System Settings → Privacy & Security → Open Anyway** on first launch. A [Homebrew formula template](packaging/homebrew/macora.rb) is included; no tap is published yet.
 
-## Native application
+There are **zero external Rust crates and zero external Swift packages**. SwiftUI, Charts, CoreWLAN, CoreLocation, AppKit and AppIntents are Apple system frameworks. No server, webview or daemon.
+
+## Why is my network slow?
+
+```text
+$ macora diagnose
+OK    Link      An active adapter has a routable IPv4 address
+OK    Gateway   192.168.1.1: 0% loss, 3.7 ms average
+OK    Internet  1.1.1.1:443 connected in 9 ms
+OK    DNS       example.com resolved in 36 ms (may be cached)
+OK    MTU       1500-byte packets reach the gateway
+
+VERDICT  No problem found on this path right now. If an app is slow, the issue is probably the remote service.
+```
+
+Each layer is checked only if the one below it works, and the verdict blames the **lowest** failing layer (router unreachable → "the problem is local", router fine but no internet → "restart the modem or call your ISP"). `diagnose` exits 1 when a layer fails and supports `--json`. It sends a few ICMP packets to your gateway, one TCP connection to 1.1.1.1:443 and one DNS lookup, **only when you run it**. The app has the same check on the Diagnostics page, in the menu bar panel and as a Shortcuts action.
+
+## CLI cookbook
+
+```sh
+macora                                # Connected adapters first; system groups collapsed
+macora --all --compact                # Expand everything with less detail
+macora --group Tunnels
+macora --interface en0 --ipv6
+macora explain en0                    # Flags, IPv6 and role in plain words
+macora doctor                         # Local interface findings (no network traffic)
+macora diagnose [--json]              # Gateway, internet, DNS and MTU walk-through
+macora ping 1.1.1.1 --count 5         # Loss and latency
+macora trace example.com              # Hop-by-hop path
+macora report --format html --redact > report.html
+macora report --format md
+macora watch --count 10 --interval 1 --json          # NDJSON frames, counters and rates
+macora watch --format prometheus                     # Text exposition for scraping
+macora snapshot before.macora         # Exact ifconfig capture, mode 0600; no overwrites
+macora diff before.macora after.macora --redact
+macora --from before.macora --all     # Inspect a capture offline
+macora services | wifi | routes | dns | neighbors | sockets | path | topology
+macora resolve example.com            # Explicit DNS lookup
+macora subnet 192.168.1.8/24
+macora probe 1.1.1.1:443 --timeout-ms 1500           # Explicit outbound TCP connection
+macora set en0 mtu 1400               # Preview only
+sudo macora set en0 mtu 1400 --apply  # Explicit change; the device may reject it
+macora tui --theme high-contrast      # default | mono | high-contrast
+macora completions zsh > ~/.zsh/completions/_macora  # also bash, fish
+```
+
+`--format` accepts `table` (default), `json`, `ndjson`, `md`/`html` (report) and `prometheus` (show/watch). Colors turn off in pipes and with `NO_COLOR`; `--color always|never` overrides. `macora --help` lists everything; `man macora` is installed by the install script.
+
+`--up` means administratively enabled; link-active is a different property. `utun` presence does **not** establish VPN ownership or connectivity. `en0` is not assumed to be Wi-Fi: hardware port names come from `networksetup`. Global-range address labels do not verify internet reachability. UI traffic sums the Network adapter group only, reducing tunnel/bridge double counting; it is not per-process bandwidth accounting.
+
+Snapshots contain private network data. Redaction masks IP and MAC values present in the interface model; it does not anonymize interface labels, service names, SSIDs, proxy settings, route/DNS inspectors or arbitrary copied text. Raw captures and full exports stay intentionally unredacted.
+
+## Native app
 
 - **Overview:** active adapter count, live RX/TX, a 90-sample in-memory traffic chart, clear interface cards, pause/resume and refresh timestamps. Missing counters remain unavailable rather than being invented.
 - **Interface explorer:** group and search adapters, tunnels, bridges, loopback and Apple peer interfaces; inspect addresses, scopes, temporary/deprecated IPv6 attributes, MTU, MAC, media, flags, offloads and bridge members.
@@ -74,77 +133,58 @@ There are **zero external Rust crates and zero external Swift packages**. SwiftU
 
 Open the review sheet with **Configure → Action → target → Preview Change → Authorize & Apply**. No mutation runs merely by selecting a menu item or typing in a field. There is no automatic rollback. CoreWLAN joins and disconnects can also interrupt a connection, so both have explicit user actions.
 
+### Polish
+
+First-run welcome card, per-adapter sparklines, a menu-bar panel (rates, "Why slow?", copy redacted summary), a keyboard cheat sheet (**⌘/**), an accent color preference, a DEMO/LIVE badge, Reduce Motion support, and Shortcuts actions "Network status" and "Why is my network slow?". Useful keys: **⌘K** palette, **⌘R** refresh, **⇧⌘P** pause, **⇧⌘D** diagnose, **⇧⌘C** copy redacted summary, **⇧⌘E** export.
+
 ## Interactive terminal
 
 ```sh
 macora interactive              # Persistent command session
 macora repl --from tests/fixtures/macos.ifconfig
-macora tui --all --interval 1    # Live full-screen workspace on a Mac
+macora tui --all --interval 1   # Live full-screen workspace on a Mac
 macora tui --from tests/fixtures/macos.ifconfig
 ```
 
 In the REPL, use `select en0`, `detail`, `baseline`, `refresh`, `changes`, `history`, `redact on`, `export FILE` and `help`. A settings plan is never executed without explicit apply and exact terminal confirmation. The TUI uses `/` to filter, `:` for its palette, 1–6 for pages, arrows/j/k for navigation, `b` for baseline, `p` for pause and `q` to exit. [Full guide](docs/INTERACTIVE.md).
 
-![Actual Rust terminal rendering against the sanitized fixture](docs/tui-preview.png)
-
-## CLI cookbook
-
-```sh
-macora                              # Connected adapters first; system groups collapsed
-macora --all --compact              # Expand everything with less detail
-macora --group Tunnels
-macora --interface en0 --ipv6
-macora --json                       # All interface records, schema v1
-macora --all --redact                # IP/MAC masking for a terminal capture
-macora services
-macora wifi
-macora routes
-macora topology
-macora report --redact
-macora resolve example.com           # Explicit DNS lookup
-macora path                          # Default IPv4/IPv6 route + scutil reachability
-macora dns                           # Keep resolver scopes; do not flatten VPN DNS
-macora neighbors
-macora sockets
-macora watch --count 10 --interval 1 --json  # NDJSON frames, counters and per-interface rates
-macora snapshot before.macora        # Exact ifconfig capture, mode 0600; no overwrites
-macora --from before.macora --all     # Inspect a capture offline
-macora snapshot after.macora
-macora diff before.macora after.macora --redact
-macora subnet 192.168.1.8/24
-macora probe 1.1.1.1:443 --timeout-ms 1500  # Explicit outbound TCP connection
-macora set en0 mtu 1400               # Preview only
-sudo macora set en0 mtu 1400 --apply   # Explicit change; device may reject MTU
-```
-
-`--up` means administratively enabled; link-active is a different property. `utun` presence does **not** establish VPN ownership or connectivity. `en0` is not assumed to be Wi-Fi: hardware port names come from `networksetup`. Global-range address labels do not verify internet reachability. UI traffic sums the Network adapter group only, reducing tunnel/bridge double counting; it is not a per-process bandwidth accounting engine.
-
-Snapshots contain private network data. Redaction masks IP and MAC values present in the interface model; it does not anonymize interface labels, service names, SSIDs, proxy settings, route/DNS inspectors or arbitrary copied text. Raw captures and full exports remain intentionally unredacted. Redacted JSON is a sharing format; do not use it as a configuration source.
-
-Colors automatically turn off in pipes and with `NO_COLOR`. `--color always|never` overrides automatic detection. Built-in help lists every command. Optional zsh completion is in `completions/_macora`.
-
 ## NetworkManager-style coverage
 
 MACORA uses macOS network services and locations rather than Linux NetworkManager profiles, `nmcli`, netlink or systemd. See [the precise feature mapping](docs/FEATURES.md). Custom VPN providers, enterprise certificate workflows, firewall engines, Internet Sharing and virtual bridge/VLAN creation remain in System Settings or require future privileged/network-extension implementations. It does not promise complete Linux NetworkManager parity.
 
+## Documentation map
+
+| Doc | What is in it |
+| --- | --- |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Collector, JSON schema, native app structure |
+| [docs/FEATURES.md](docs/FEATURES.md) | Exact macOS ↔ NetworkManager-style mapping |
+| [docs/INTERACTIVE.md](docs/INTERACTIVE.md) | REPL and TUI guide |
+| [docs/UX.md](docs/UX.md) | Design and interaction notes |
+| [docs/TESTING.md](docs/TESTING.md) | What was run, how to repeat it, manual hardware checklist |
+| [docs/RELEASE.md](docs/RELEASE.md) | Tagging, signing, notarization, repo settings |
+| [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md) | Policy, how to help, history |
+
 ## Project layout
 
 ```text
-src/                  Dependency-free Rust CLI, parser, collector and renderer
-tests/                Scenario tests and sanitized macOS ifconfig fixture
-macos/Sources/        Native SwiftUI app and reusable Swift core
-macos/Tests/          Command validation, JSON and traffic calculation tests
-scripts/              Mac .app build/sign script and fixture schema validation
-docs/                 Architecture, feature coverage, testing and design preview
-.github/workflows/    Rust lint/tests, macOS app build/tests and read-only smoke checks
+src/                  Dependency-free Rust CLI, parser, collector, probes, exporters, TUI
+tests/                Scenario, interactive and feature tests; sanitized fixtures
+macos/Sources/        SwiftUI app (MacoraApp) and testable core (MacoraCore)
+macos/Tests/          Command validation, JSON, diagnosis and traffic tests
+scripts/              build-macos, package-mac, install-macos, smoke-cli, shots, PTY tests
+completions/ man/     bash, zsh and fish completions; macora(1)
+site/                 GitHub Pages landing page
+.github/              CI, release and Pages workflows; templates; Dependabot
 ```
 
 ## Validation status
 
-40 Rust tests, four pseudo-terminal tests, formatting and Clippy were executed in a Linux development container against sanitized macOS captures and a local TCP listener. Native Swift source syntax was checked separately across 16 files; 19 native unit-test methods are supplied but were not run here. **SwiftUI compilation, Swift tests, macOS live collection, authorization, CoreWLAN and real settings changes were not executed in this environment.** macOS CI and a manual hardware test plan are included; their presence is not a claim they have already passed.
+Run on an Apple silicon Mac: **51 Rust tests, 4 pseudo-terminal tests, 27 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **44-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, notarization, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
 
-See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. The ZIP is a complete source project, not a prebuilt `.app` or DMG.
+## Roadmap
+
+Notarized releases and a Homebrew tap · per-process bandwidth (needs a privileged helper, not planned for the sandbox-free app) · Intel verification · more captured fixtures from other macOS versions (PRs welcome).
 
 ## License
 
-Copyright 2026 Zyvor AI Labs. Licensed under **Apache License 2.0**, including the Rust CLI and Swift application. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The versioned source package is 0.2.0. The proposed repository slug is `zyvorai/zyvor-macora`; no repository or release has been published by this package.
+Copyright 2026 Zyvor AI Labs. Licensed under **Apache License 2.0**, including the Rust CLI and Swift application. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The design takes broad inspiration from Zyvor Vytrix's sidebar/card layout; this is new source code, not a fork, and shares no code or assets.

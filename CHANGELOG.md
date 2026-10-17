@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.3.0
+
+### Diagnose
+
+- Add `macora diagnose` and a native "Why is my network slow?" wizard: link, gateway, internet, DNS and MTU checks that stop at the lowest failing layer and explain the result in plain language. `--json` output is structured. Active checks run only when invoked.
+- Add `macora ping HOST` and `macora trace HOST` (fixed-path `/sbin/ping` and `/usr/sbin/traceroute`, strict hostname validation).
+
+### CLI and TUI
+
+- Add `--format table|json|ndjson|md|html|prometheus`; `report --format html` writes a standalone, script-free report with light/dark styling; `watch/show --format prometheus` emits scrape-ready text.
+- Add `macora completions bash|zsh|fish`, generated from one command table, and a `macora(1)` man page.
+- Add `tui --theme default|mono|high-contrast`.
+
+### Native app
+
+- Add a first-run welcome card, per-adapter sparklines, a richer menu-bar panel (rates, diagnosis, copy redacted summary), a keyboard cheat sheet (Cmd-/), an accent color preference and a persistent DEMO/LIVE badge.
+- Add Shortcuts actions "Network status" and "Why is my network slow?" (App Intents).
+- Fix the export button stretching across the toolbar.
+
+### Project
+
+- Add CI smoke test (`scripts/smoke-cli.sh`), release workflow (CLI tarball, DMG, pkg and checksums; signs and notarizes only when Apple secrets exist), Pages workflow, issue/PR templates, Dependabot, Code of Conduct and a Homebrew formula template.
+- Fix a Clippy `collapsible_match` lint and a macOS-only PTY test flake (`PENDIN` terminal flag).
+
+### Validation
+
+Run on macOS (Apple silicon): 51 Rust tests, 4 pseudo-terminal tests, rustfmt, Clippy, 27 Swift tests, an app build, packaging (DMG, pkg, tarball, checksums) and a 44-check read-only CLI smoke script. Not run: Intel Macs, notarization, authorized configuration changes, Wi-Fi join/disconnect.
+
 ## 0.2.0
 
 ### Terminal workspace

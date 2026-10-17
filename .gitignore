@@ -2,3 +2,4 @@ target/
 dist/
 .build/
 .DS_Store
+release/
