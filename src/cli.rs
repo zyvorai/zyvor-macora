@@ -1,7 +1,7 @@
 use crate::{
-    collect, insight,
+    collect, export, insight,
     model::{json_string, Snapshot},
-    parse,
+    parse, probe,
     view::{self, Filter, Theme},
 };
 use std::{
@@ -31,6 +31,10 @@ USAGE  macora [COMMAND] [OPTIONS]
   neighbors             ARP and IPv6 neighbor tables
   sockets               TCP/UDP sockets visible to your user
   doctor                Local interface findings (no external probes)
+  diagnose              Why is my network slow? Gateway, internet, DNS and MTU checks
+  ping HOST             Packet loss and latency (--count, default 4)
+  trace HOST            Hop-by-hop path via traceroute
+  completions SHELL     Print bash, zsh or fish completions
   watch                 Live counters and traffic rates; Ctrl-C to stop
   snapshot FILE         Save private ifconfig capture, never overwrite
   diff BEFORE AFTER     Compare two ifconfig captures
@@ -47,6 +51,8 @@ OPTIONS
   --ipv4 | --ipv6       Address family filter
   --compact             Hide media, MAC and cumulative counters
   --json                Machine-readable output (watch: NDJSON)
+  --format FMT          table (default), json, ndjson; report: md, html; watch/show: prometheus
+  --theme NAME          tui colors: default, mono, high-contrast
   --redact              Mask IP/MAC values in show/explain/doctor/diff
   --from FILE           Inspect saved macOS ifconfig output, offline
   --color MODE          auto (default), always, never; honors NO_COLOR
@@ -65,6 +71,8 @@ pub struct Args {
     pub words: Vec<String>,
     pub filter: Filter,
     pub json: bool,
+    pub format: Option<String>,
+    pub theme: Option<String>,
     pub redact: bool,
     pub from: Option<String>,
     pub color: Option<String>,
@@ -106,6 +114,27 @@ pub fn arguments(args: Vec<String>) -> Result<Args, String> {
                     return Err("Unknown group".into());
                 }
                 out.filter.group = Some(g);
+            }
+            "--format" => {
+                let f = value(&mut args)?;
+                if !export::FORMATS.contains(&f.as_str()) {
+                    return Err(format!(
+                        "Format must be one of: {}",
+                        export::FORMATS.join(", ")
+                    ));
+                }
+                out.json |= f == "json" || f == "ndjson";
+                out.format = Some(f);
+            }
+            "--theme" => {
+                let t = value(&mut args)?;
+                if !export::THEMES.contains(&t.as_str()) {
+                    return Err(format!(
+                        "Theme must be one of: {}",
+                        export::THEMES.join(", ")
+                    ));
+                }
+                out.theme = Some(t);
             }
             "--from" => out.from = Some(value(&mut args)?),
             "--no-color" => out.color = Some("never".into()),
@@ -270,6 +299,24 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
             && (a.color.as_deref() == Some("always")
                 || (io::stdout().is_terminal() && std::env::var_os("NO_COLOR").is_none())),
     };
+    if let Some(f) = a.format.as_deref() {
+        let ok = match f {
+            "md" | "html" => cmd == "report",
+            "prometheus" => cmd == "watch" || cmd == "show",
+            _ => true,
+        };
+        if !ok {
+            return Err(format!("--format {f} is not supported for {cmd}"));
+        }
+    }
+    if a.theme.is_some() && cmd != "tui" {
+        return Err("--theme only applies to tui".into());
+    }
+    if ["diagnose", "ping", "trace"].contains(&cmd) && (a.from.is_some() || a.redact) {
+        return Err(format!(
+            "{cmd} is a live check; --from and --redact are not supported"
+        ));
+    }
     if a.apply && cmd != "set" {
         return Err("--apply is only valid with set".into());
     }
@@ -319,7 +366,8 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
         return Err("Use the workspace's select, filter, family and all controls inside interactive/TUI mode".into());
     }
     let expected = match cmd {
-        "explain" | "snapshot" | "subnet" | "probe" | "resolve" => Some(2),
+        "explain" | "snapshot" | "subnet" | "probe" | "resolve" | "ping" | "trace"
+        | "completions" => Some(2),
         "diff" => Some(3),
         "set" => None,
         _ => Some(1),
@@ -348,11 +396,14 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                 t.color,
                 a.redact,
                 a.filter.all,
+                a.theme.as_deref().unwrap_or("default"),
             )
         }
         "report" | "topology" => {
             let s = get(&a)?;
-            let mut output = if cmd == "report" {
+            let mut output = if cmd == "report" && a.format.as_deref() == Some("html") {
+                export::html_report(&s)
+            } else if cmd == "report" {
                 crate::explore::report(&s, a.json)
             } else {
                 crate::explore::topology(&s, a.json)
@@ -390,11 +441,72 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                 view::safe(&output)
             })
         }
+        "completions" => emit(export::completions(&a.words[1])?.trim_end()),
+        "ping" => {
+            let count = a.count.unwrap_or(4).min(50);
+            let stats = probe::ping_stats(&a.words[1], count, None)?;
+            emit(&if a.json {
+                probe::ping_json(&a.words[1], &stats)
+            } else {
+                probe::ping_text(&a.words[1], &stats)
+            })?;
+            if stats.received == 0 {
+                return Err("No replies received".into());
+            }
+            Ok(())
+        }
+        "trace" => {
+            let out = probe::trace(&a.words[1])?;
+            emit(&if a.json {
+                format!(
+                    "{{\"host\":{},\"output\":{}}}",
+                    json_string(&a.words[1]),
+                    json_string(&out)
+                )
+            } else {
+                view::safe(out.trim_end())
+            })
+        }
+        "diagnose" => {
+            if !cfg!(target_os = "macos") {
+                return Err("diagnose requires macOS".into());
+            }
+            let steps = probe::diagnose(&collect::snapshot()?);
+            emit(&if a.json {
+                probe::steps_json(&steps)
+            } else {
+                steps
+                    .iter()
+                    .map(|s| {
+                        let code = match s.status {
+                            probe::Status::Ok => "92",
+                            probe::Status::Warn => "93",
+                            probe::Status::Fail => "91",
+                            probe::Status::Skip => "90",
+                        };
+                        format!(
+                            "{} {:<9} {}",
+                            t.paint(code, &format!("{:<5}", s.status.label())),
+                            s.name,
+                            view::safe(&s.detail)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+                    + &format!("\n\n{}  {}", t.title("VERDICT"), probe::verdict(&steps))
+            })?;
+            if steps.iter().any(|s| s.status == probe::Status::Fail) {
+                return Err("Diagnosis found a failing layer".into());
+            }
+            Ok(())
+        }
         "help" => emit(HELP),
         "version" => emit(concat!("macora ", env!("CARGO_PKG_VERSION"))),
         "show" => {
             let s = select(get(&a)?, &a.filter)?;
-            let mut output = if a.json {
+            let mut output = if a.format.as_deref() == Some("prometheus") {
+                export::prometheus(&s, &BTreeMap::new())
+            } else if a.json {
                 s.json()
             } else {
                 view::interfaces(&s, &a.filter, &t, &BTreeMap::new())
@@ -575,7 +687,9 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                         view::rates(previous, &s, now.duration_since(*at).as_secs_f64())
                     })
                     .unwrap_or_default();
-                let mut text = if a.json {
+                let mut text = if a.format.as_deref() == Some("prometheus") {
+                    export::prometheus(&s, &rates)
+                } else if a.json {
                     let rate_json = rates.iter().map(|(name, (rx, tx))| format!("{}:{{\"rx_bytes_per_second\":{:.2},\"tx_bytes_per_second\":{:.2}}}", json_string(name), rx, tx)).collect::<Vec<_>>().join(",");
                     format!(
                         "{{\"frame\":{},\"snapshot\":{},\"rates\":{{{}}}}}",

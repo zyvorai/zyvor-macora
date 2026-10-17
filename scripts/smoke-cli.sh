@@ -37,6 +37,15 @@ run 0 neighbors
 run 0 sockets
 run 0 topology
 run 0 report --redact
+run 0 report --format html --redact
+run 0 report --format md
+run 0 show --format prometheus
+run 0 diagnose
+run 0 ping 127.0.0.1 --count 2
+run 0 trace 127.0.0.1
+run 0 completions bash
+run 0 completions zsh
+run 0 completions fish
 run 0 doctor
 run 0 subnet 192.168.1.8/24
 run 0 resolve localhost
@@ -49,6 +58,9 @@ if "$bin" watch --count 2 --interval 1 --json 2>/dev/null | python3 -c 'import s
   pass=$((pass+1)); echo 'ok    macora watch --json (2 NDJSON frames)'
 else fail=$((fail+1)); echo 'FAIL  macora watch --json' >&2; fi
 run 1 --apply
+run 1 ping 'a;b'
+run 1 completions powershell
+run 1 --format yaml
 run 1 definitely-not-a-command
 run 1 subnet not-a-cidr
 

@@ -50,6 +50,22 @@ pub struct Dashboard {
     pub sort: u8,
     pub rates: BTreeMap<String, (f64, f64)>,
     pub traffic: Vec<f64>,
+    pub palette: String,
+}
+/// Maps the SGR codes the dashboard emits onto a named palette.
+pub fn restyle(palette: &str, code: &str) -> String {
+    match (palette, code) {
+        // Monochrome keeps only weight: dim for secondary text, bold for emphasis.
+        ("mono", "90") => "2".into(),
+        ("mono", "1;96") | ("mono", "93") => "1".into(),
+        ("mono", _) => "0".into(),
+        // High contrast avoids grey-on-black and the dim cyan.
+        ("high-contrast", "90") => "37".into(),
+        ("high-contrast", "36") => "1;96".into(),
+        ("high-contrast", "92") => "1;92".into(),
+        ("high-contrast", "93") => "1;93".into(),
+        _ => code.into(),
+    }
 }
 impl Dashboard {
     pub fn new(s: Snapshot, source: Option<String>) -> Self {
@@ -67,6 +83,7 @@ impl Dashboard {
             sort: 0,
             rates: BTreeMap::new(),
             traffic: vec![],
+            palette: "default".into(),
         }
     }
     pub fn names(&self) -> Vec<String> {
@@ -486,7 +503,7 @@ impl Dashboard {
                 };
                 line = view::safe(&line).replace('\n', " ");
                 let line = line.chars().take(width).collect::<String>();
-                theme.paint(&code, &line)
+                theme.paint(&restyle(&self.palette, &code), &line)
             })
             .collect::<Vec<_>>()
             .join("\r\n")
@@ -558,6 +575,7 @@ pub fn run(
     color: bool,
     redact: bool,
     all: bool,
+    palette: &str,
 ) -> Result<(), String> {
     if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
         return Err(
@@ -567,6 +585,7 @@ pub fn run(
     let mut app = Dashboard::new(session::load(source.as_deref())?, source);
     app.session.redact = redact;
     app.session.all = all;
+    app.palette = palette.into();
     let _terminal = Terminal::enter()?;
     let running = Arc::new(AtomicBool::new(true));
     let active = running.clone();

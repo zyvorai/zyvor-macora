@@ -1,0 +1,62 @@
+.TH MACORA 1 "October 2026" "macora 0.3.0" "User Commands"
+.SH NAME
+macora \- explainable network cockpit for macOS
+.SH SYNOPSIS
+.B macora
+[\fICOMMAND\fR] [\fIOPTIONS\fR]
+.SH DESCRIPTION
+Shows grouped, explained network interfaces and read-only diagnostics. Nothing changes system settings unless
+.B set
+is run with
+.BR \-\-apply .
+.SH COMMANDS
+.TP
+.B show
+Grouped interfaces (default).
+.TP
+.B explain \fIIFACE\fR
+Explain flags, IPv6 and interface role.
+.TP
+.B diagnose
+Walk link, gateway, internet, DNS and MTU and print a plain-language verdict. Sends a few packets.
+.TP
+.B ping \fIHOST\fR, trace \fIHOST\fR
+Packet loss/latency and hop path.
+.TP
+.B doctor, topology, report, routes, path, dns, services, wifi, neighbors, sockets
+Local inspection views.
+.TP
+.B watch
+Live counters and rates; with \fB\-\-format prometheus\fR emits scrape-ready text.
+.TP
+.B snapshot \fIFILE\fR, diff \fIA\fR \fIB\fR
+Save (mode 0600, never overwrite) and compare captures.
+.TP
+.B tui, interactive
+Full-screen dashboard and REPL.
+.TP
+.B completions \fISHELL\fR
+Print bash, zsh or fish completions.
+.SH OPTIONS
+.TP
+.B \-\-format \fIFMT\fR
+table, json, ndjson; report: md, html; show/watch: prometheus.
+.TP
+.B \-\-theme \fINAME\fR
+TUI palette: default, mono, high-contrast.
+.TP
+.B \-\-redact
+Mask IP and MAC values.
+.TP
+.B \-\-from \fIFILE\fR
+Inspect a saved ifconfig capture offline.
+.PP
+See \fBmacora --help\fR for the full list.
+.SH ENVIRONMENT
+.TP
+.B NO_COLOR
+Disable color output.
+.SH EXIT STATUS
+0 on success; 1 on error or when diagnose finds a failing layer.
+.SH AUTHORS
+Zyvor AI Labs. Apache-2.0.
