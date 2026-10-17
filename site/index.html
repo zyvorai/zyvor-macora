@@ -46,19 +46,22 @@ footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(-
 <p style="color:var(--mut);font-size:14px">Simulated demo data. Not a screenshot of a real network.</p>
 </section>
 <div class="grid">
-<div class="card"><h3>Why is it slow?</h3><p>One check walks link → router → internet → DNS → MTU and stops at the first real problem, in plain language.</p></div>
+<div class="card"><h3>Why is it slow?</h3><p>One check walks link → router → internet → sign-in page → DNS → HTTPS → path MTU, plus Wi-Fi quality and IPv6. It names the lowest layer that is really wrong and tells you what to try.</p></div>
 <div class="card"><h3>Explained, not dumped</h3><p>Interfaces grouped and annotated: scoped IPv6, temporary addresses, bridges, tunnels, flags.</p></div>
 <div class="card"><h3>Native and terminal</h3><p>SwiftUI app with a menu-bar panel, plus <code>macora</code>, an interactive REPL and a full-screen TUI.</p></div>
 <div class="card"><h3>Share safely</h3><p>Redact IPs and MACs, export Markdown, HTML or Prometheus text. Snapshots are private by default.</p></div>
 <div class="card"><h3>Read-only</h3><p>Nothing changes your settings without a preview and an explicit confirmation.</p></div>
 <div class="card"><h3>Zero dependencies</h3><p>No external Rust crates or Swift packages. Apache 2.0.</p></div>
 </div>
+<h2>In the terminal</h2>
+<p class="sub">It works like <code>ifconfig</code>, with plain words: <code>macora en0</code>, <code>macora list up</code>, <code>macora diagnose</code>. Output below is real, with addresses masked by <code>redact</code>.</p>
+<img class="shot" src="docs/ux/cli-diagnose.png" alt="macora diagnose redact in a terminal: link, route, Wi-Fi, router, internet, DNS, HTTPS, path MTU and IPv6 checks with a verdict">
 <h2 id="install">Download and install</h2>
-<p class="sub">Version 0.3.1 · macOS 14 or newer · Apple silicon · signed by Zyvor AI Labs and <b>notarized by Apple</b>, so it opens without a Gatekeeper warning.</p>
+<p class="sub">Version 0.4.0 · macOS 14 or newer · Apple silicon · signed by Zyvor AI Labs and <b>notarized by Apple</b>, so it opens without a Gatekeeper warning.</p>
 <div class="grid">
-<div class="card"><h3>Disk image (.dmg)</h3><p>Open it and drag MACORA into Applications. Best for most people.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.dmg">Download .dmg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.dmg.sha256">SHA-256</a></p></div>
-<div class="card"><h3>Installer (.pkg)</h3><p>Double-click to install into Applications. Handy for managed Macs and scripts.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.pkg">Download .pkg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.pkg.sha256">SHA-256</a></p></div>
-<div class="card"><h3>Command line only</h3><p>The <code>macora</code> CLI with man page and shell completions.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/macora-0.3.1-arm64-apple-darwin.tar.gz">Download .tar.gz</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/macora-0.3.1-arm64-apple-darwin.tar.gz.sha256">SHA-256</a></p></div>
+<div class="card"><h3>Disk image (.dmg)</h3><p>Open it and drag MACORA into Applications. Best for most people.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.4.0/Macora-0.4.0.dmg">Download .dmg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.4.0/Macora-0.4.0.dmg.sha256">SHA-256</a></p></div>
+<div class="card"><h3>Installer (.pkg)</h3><p>Double-click to install into Applications. Handy for managed Macs and scripts.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.4.0/Macora-0.4.0.pkg">Download .pkg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.4.0/Macora-0.4.0.pkg.sha256">SHA-256</a></p></div>
+<div class="card"><h3>Command line only</h3><p>The <code>macora</code> CLI with man page and shell completions.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.4.0/macora-0.4.0-arm64-apple-darwin.tar.gz">Download .tar.gz</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.4.0/macora-0.4.0-arm64-apple-darwin.tar.gz.sha256">SHA-256</a></p></div>
 </div>
 <h3>Install steps</h3>
 <ol>
@@ -68,7 +71,7 @@ footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(-
 <li>To look around without touching your network, start it with simulated data: <code>open -a MACORA --args --demo</code>.</li>
 </ol>
 <p class="sub">With Homebrew: <code>brew install --cask zyvorai/tap/macora</code> (the app and the <code>macora</code> command) or <code>brew install zyvorai/tap/macora</code> (command line only).</p>
-<p class="sub">Verify a download: <code>shasum -a 256 -c Macora-0.3.1.dmg.sha256</code>. Uninstall: drag MACORA from Applications to the Trash. It runs no background service and leaves nothing else behind except its preferences. The CLI tarball is signed but not notarized, so if macOS blocks <code>macora</code> after download, run <code>xattr -d com.apple.quarantine macora</code> once.</p>
+<p class="sub">Verify a download: <code>shasum -a 256 -c Macora-0.4.0.dmg.sha256</code>. Uninstall: drag MACORA from Applications to the Trash. It runs no background service and leaves nothing else behind except its preferences. The CLI tarball is signed but not notarized, so if macOS blocks <code>macora</code> after download, run <code>xattr -d com.apple.quarantine macora</code> once.</p>
 <h2>Build from source</h2>
 <pre>git clone https://github.com/zyvorai/zyvor-macora.git &amp;&amp; cd zyvor-macora
 ./scripts/install-macos.sh ~/.local   # CLI, man page, completions

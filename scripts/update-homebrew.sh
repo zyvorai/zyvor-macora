@@ -1,7 +1,7 @@
 #!/bin/bash
 # Update the Homebrew tap (zyvorai/homebrew-tap) for a published release: sets version and sha256 from the
 # release's .sha256 files, then copies Formula/macora.rb and Casks/macora.rb into the tap checkout.
-# Usage: scripts/update-homebrew.sh VERSION TAP_DIR      e.g. scripts/update-homebrew.sh 0.3.1 ~/src/homebrew-tap
+# Usage: scripts/update-homebrew.sh VERSION TAP_DIR      e.g. scripts/update-homebrew.sh 0.4.0 ~/src/homebrew-tap
 set -euo pipefail
 version="${1:?usage: update-homebrew.sh VERSION TAP_DIR}"; tap="${2:?usage: update-homebrew.sh VERSION TAP_DIR}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
