@@ -42,7 +42,10 @@ pkg_args=(--component "$app" --install-location /Applications --version "$versio
 if [[ -n "${DEVELOPER_ID_INSTALLER:-}" ]]; then pkg_args+=(--sign "$DEVELOPER_ID_INSTALLER" --timestamp); fi
 pkgbuild "${pkg_args[@]}" "$out/Macora-$version.pkg" >/dev/null
 if [[ -n "${NOTARY_PROFILE:-}" && -n "${MACORA_SIGN_IDENTITY:-}" ]]; then
-  for f in "$out/Macora-$version.dmg" "$out/Macora-$version.pkg"; do
+  to_notarize=("$out/Macora-$version.dmg")
+  # An unsigned pkg cannot be notarized.
+  if [[ -n "${DEVELOPER_ID_INSTALLER:-}" ]]; then to_notarize+=("$out/Macora-$version.pkg"); else echo "pkg is unsigned (no DEVELOPER_ID_INSTALLER): skipping its notarization."; fi
+  for f in "${to_notarize[@]}"; do
     xcrun notarytool submit "$f" --keychain-profile "$NOTARY_PROFILE" --wait
     xcrun stapler staple "$f"
   done
