@@ -23,9 +23,13 @@ An independent pass, run against the **released** artifacts rather than the work
 | `diagnose` vs independent tools | `scripts/verify-diagnose.py` (28 checks): gateway and interface equal `route get default`; router latency vs `ping`; DNS vs `dig`; HTTPS total vs `curl -w`; path MTU vs a manual `ping -D` bisection; Wi-Fi signal vs `system_profiler`; portal vs a direct fetch; `to` a real, a missing and a local host; hostile host names rejected; text/JSON/Markdown/HTML valid; `redact` leaks none of the local addresses in any format; `count`, `strict`, `speed` (vs a second `networkQuality` run); time budget (full under 15 s, quick under 5 s) | 28/28 |
 | Released DMG and pkg | notarization stapled and accepted by `spctl`; app signed by team NX667LTDQ2 with the hardened runtime; `codesign --verify --deep --strict`; bundled CLI runs; the app launches from the DMG | pass |
 | pkg `postinstall` | run against a scratch root: links `/usr/local/bin/macora`; an unwritable target prints a message and still exits 0 | pass |
-| Homebrew | tap serves formula and cask at the released version | pass |
+| Homebrew (fresh install, both) | Formula: installs, signed by team NX667LTDQ2 with the hardened runtime, passes `scripts/verify-cli.py` (52/52), man page and bash/zsh/fish completions linked, `brew test` passes, uninstalls cleanly. Cask: installs to `/Applications`, notarized and accepted by Gatekeeper, opens a window, links `macora` into `/opt/homebrew/bin`, uninstalls cleanly | pass |
 | Website and README | zyvor-web build succeeds with `/macora` and `/docs/macora`, no macora broken links; every image the README references exists | pass |
 | Mini | the released CLI runs on a second Mac and returns a clean verdict | pass |
+
+**0.4.1 artifacts.** Built, signed and notarized on a separate Mac; downloaded back and checked: SHA-256 files match, DMG and pkg stapled and accepted by `spctl`, app passes `codesign --verify --deep --strict`, reports 0.4.1 with the completion fix, and the tarball binary passes `verify-cli.py` 52/52.
+
+**Test-environment pitfalls.** (1) A `macora` earlier on `PATH` than Homebrew's (here, an old copy in `~/.local/bin`) is what `macora` runs, so test the installed path (`$(brew --prefix macora)/bin/macora`). (2) Running the app's `Contents/MacOS/Macora` with `--help` starts the GUI and does not return; use the bundled CLI in `Contents/Resources/macora` instead. (3) A Mac that sleeps drops off Wi-Fi and may return with a new address; confirm its SSH host key against the saved fingerprint before trusting the new address.
 
 **Findings.** One bug: tab completion after `diagnose to` offered option words although the next word is a host. Fixed in 0.4.1 for bash, zsh and fish, with a test.
 
