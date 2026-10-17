@@ -67,6 +67,7 @@ footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(-
 <li>Choose <b>Open</b> if macOS asks to confirm an app downloaded from the internet. It is notarized, so there is no “unidentified developer” block.</li>
 <li>To look around without touching your network, start it with simulated data: <code>open -a MACORA --args --demo</code>.</li>
 </ol>
+<p class="sub">With Homebrew: <code>brew install --cask zyvorai/tap/macora</code> (the app and the <code>macora</code> command) or <code>brew install zyvorai/tap/macora</code> (command line only).</p>
 <p class="sub">Verify a download: <code>shasum -a 256 -c Macora-0.3.1.dmg.sha256</code>. Uninstall: drag MACORA from Applications to the Trash. It runs no background service and leaves nothing else behind except its preferences. The CLI tarball is signed but not notarized, so if macOS blocks <code>macora</code> after download, run <code>xattr -d com.apple.quarantine macora</code> once.</p>
 <h2>Build from source</h2>
 <pre>git clone https://github.com/zyvorai/zyvor-macora.git &amp;&amp; cd zyvor-macora

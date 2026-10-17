@@ -74,7 +74,14 @@ macora tui                                # full-screen workspace
 open dist/Macora.app                      # or add --args --demo for simulated data
 ```
 
-Download `Macora-0.3.1.dmg` (drag to Applications) or `Macora-0.3.1.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. A [Homebrew formula template](packaging/homebrew/macora.rb) is included; no tap is published yet.
+Download `Macora-0.3.1.dmg` (drag to Applications) or `Macora-0.3.1.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. With Homebrew (the tap installs the notarized app, or just the CLI):
+
+```sh
+brew install --cask zyvorai/tap/macora   # MACORA.app and `macora` on your PATH
+brew install zyvorai/tap/macora          # the command line tool only
+```
+
+Install one or the other: they provide the same `macora` command.
 
 There are **zero external Rust crates and zero external Swift packages**. SwiftUI, Charts, CoreWLAN, CoreLocation, AppKit and AppIntents are Apple system frameworks. No server, webview or daemon.
 
@@ -200,7 +207,7 @@ Run on an Apple silicon Mac (the 0.3.1 DMG and pkg were also signed, notarized, 
 
 ## Roadmap
 
-Notarized releases and a Homebrew tap · per-process bandwidth (needs a privileged helper, not planned for the sandbox-free app) · Intel verification · more captured fixtures from other macOS versions (PRs welcome).
+Notarized CI releases (today they are notarized by hand) · per-process bandwidth (needs a privileged helper, not planned for the sandbox-free app) · Intel verification · more captured fixtures from other macOS versions (PRs welcome).
 
 ## License
 
