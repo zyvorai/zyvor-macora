@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1
+
+- Tab completion no longer offers option words after `diagnose to`; the next word is a host (bash, zsh, fish).
+- New `scripts/verify-cli.py` and `scripts/verify-diagnose.py`: read-only checks of the CLI and of `diagnose` against `ifconfig`, `netstat`, `ping`, `dig`, `curl` and `system_profiler`. [docs/TESTING.md](docs/TESTING.md) now records every check run on the released artifacts.
+
 ## 0.4.0
 
 ### diagnose: fixes
