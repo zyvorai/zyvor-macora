@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### diagnose: fixes
+
+- **The MTU check was misleading.** It pinged only the router, so it said "OK" on a network whose real path MTU to the internet is 1480 (measured: 1480-byte packets pass, 1492 and 1500 do not). It now measures the **path** to the internet and reports the number and the usual cause.
+- A router that ignores ping no longer fails the run and hides everything above it: it is a warning when traffic flows.
+- One blocked probe target (1.1.1.1) no longer decides "the internet is down": three targets, and it fails only if none answers.
+- IPv6-only networks no longer fail the link check; the link check follows the default route's adapter, and a tunnel default route (no router address) is information, not a failure.
+- DNS is tested against **every configured server** (uncached), compared with 1.1.1.1, plus the system resolver; slow or dead servers are named. IPv6 router addresses with a scope (`fe80::1%en0`) work.
+- Contradictory verdicts are gone: findings are ranked (failures before warnings, lowest layer first) with advice and an "also noticed" list.
+- `diagnose redact` now works (masks router, local and DNS addresses in text, JSON, Markdown and HTML).
+- The ping parser reads jitter (`stddev` for IPv4, `std-dev` for IPv6) and ignores `nan`.
+
+### diagnose: new
+
+- Wi-Fi quality (signal, noise, SNR, band, width, PHY, rate), router and internet jitter, captive-portal detection, an HTTPS timing breakdown (DNS/TCP/TLS/first byte, IPv4 and IPv6), IPv6 reachability, proxy awareness, and route/tunnel information.
+- `diagnose to HOST` (why is this site slow?), `quick` (about 2 s), `speed` (Apple's networkQuality, opt-in), `strict` (exit 1 on warnings), `md` and `html` reports, and `count N interval S` to find intermittent problems.
+- The app's Diagnostics page shows the new steps, an INFO status, advice, a site field, quick/speed options and a masked "Copy report".
+- A full run takes about 8 s: independent probes run in parallel, and the Wi-Fi query (which scans and would distort latency) runs after them. See [docs/DIAGNOSE.md](docs/DIAGNOSE.md).
+
+### Tests
+
+- 100+ new Rust tests (parsers, path-MTU search exact for every MTU 576-1500, ~70 diagnose scenarios, collector replayed against a fake runner, CLI validation, real sockets), 7 new Swift tests, a Rust/Swift contract check for step names and statuses, and mutation checks that found and closed test gaps.
+
 ## 0.3.1
 
 ### CLI: words, not dashes, and it works like ifconfig

@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BIN = os.environ.get("MACORA_BIN", str(ROOT / "target/release/macora"))
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "docs/ux"
 BG, FG, CHROME = (22, 22, 29), (222, 222, 228), (44, 44, 54)
-COLS = 118
+COLS = 168
 FONT = ImageFont.truetype("/System/Library/Fonts/SFNSMono.ttf", 15)
 CW = FONT.getlength("M")
 LH = 21
@@ -88,11 +88,11 @@ def main():
     # Screenshots
     big = run(["redact", "group", "Network"])
     frame([prompt("macora redact group Network")] + big, len(big) + 1).save(OUT / "cli-overview.png", optimize=True)
-    diag = subprocess.run([BIN, "color", "always", "diagnose"], capture_output=True, text=True).stdout.rstrip("\n").split("\n")
-    frame([prompt("macora diagnose")] + diag, len(diag) + 1).save(OUT / "cli-diagnose.png", optimize=True)
+    diag = subprocess.run([BIN, "color", "always", "diagnose", "redact"], capture_output=True, text=True).stdout.rstrip("\n").split("\n")
+    frame([prompt("macora diagnose redact")] + diag, len(diag) + 1).save(OUT / "cli-diagnose.png", optimize=True)
     # Typing GIF
     scenes = [("macora en0 redact", ["en0", "redact"], 2400), ("macora list up", ["list", "up"], 1800),
-              ("macora en0 raw redact", ["en0", "raw", "redact"], 2600), ("macora diagnose", ["diagnose"], 3600)]
+              ("macora en0 raw redact", ["en0", "raw", "redact"], 2600), ("macora diagnose redact", ["diagnose", "redact"], 5200)]
     rows = max(len(run(a)) for _, a, _ in scenes) + 2
     rows = max(rows, 14)
     frames, durations = [], []
@@ -107,7 +107,7 @@ def main():
         for k in range(4, len(out) + 4, 4):
             add([prompt(cmd)] + out[:k], 60)
         add([prompt(cmd)] + out + [prompt("\x1b[7m \x1b[0m")], hold)
-    small = [f.resize((int(f.width * 0.8), int(f.height * 0.8)), Image.LANCZOS).convert("P", palette=Image.ADAPTIVE, colors=96) for f in frames]
+    small = [f.resize((int(f.width * 0.62), int(f.height * 0.62)), Image.LANCZOS).convert("P", palette=Image.ADAPTIVE, colors=96) for f in frames]
     small[0].save(OUT / "macora-cli.gif", save_all=True, append_images=small[1:], duration=durations, loop=0, optimize=True, disposal=2)
     print("wrote", OUT / "cli-overview.png", OUT / "cli-diagnose.png", OUT / "macora-cli.gif", len(frames), "frames")
 

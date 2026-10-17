@@ -818,7 +818,21 @@ fn target_steps(f: &Facts) -> Vec<(Step, Option<Finding>)> {
     let detail = format!("{}: {}", t.host, parts.join(" · "));
     let any = t.dns.iter().any(|p| p.ok);
     let ref_ok = t.dns_reference.as_ref().is_some_and(|r| r.ok);
-    if !any && !t.dns.is_empty() {
+    let sys_ok = matches!(t.system, Some(Ok(_)));
+    // The servers all said no, but the system resolver (hosts file, .local, VPN split DNS) found it.
+    let only_system = !any && !t.dns.is_empty() && sys_ok;
+    let unresolved = !any && !t.dns.is_empty() && !sys_ok;
+    if only_system {
+        out.push((
+            Step::new("Site DNS", Status::Warn, format!("{detail}; the system resolver finds it")),
+            Some(Finding {
+                rank: 4,
+                status: Status::Warn,
+                headline: format!("Your DNS servers do not know {}, but this Mac resolves it another way (a hosts entry, a .local name or VPN DNS).", t.host),
+                advice: vec!["Usually fine for local names. If it is a public site, check your VPN or DNS settings.".into()],
+            }),
+        ));
+    } else if unresolved {
         let (headline, advice) = if ref_ok {
             (
                 format!(
@@ -861,6 +875,25 @@ fn target_steps(f: &Facts) -> Vec<(Step, Option<Finding>)> {
             advice: vec!["Try a different DNS server (1.1.1.1 or 8.8.8.8).".into()],
         });
         out.push((Step::new("Site DNS", st, detail), fnd));
+    }
+    if unresolved {
+        out.push((
+            Step::new(
+                "Site HTTPS",
+                Status::Skip,
+                "Skipped: the name does not resolve.",
+            ),
+            None,
+        ));
+        out.push((
+            Step::new(
+                "Site path",
+                Status::Skip,
+                "Skipped: the name does not resolve.",
+            ),
+            None,
+        ));
+        return out;
     }
     if let Some(h) = &t.http {
         if !h.ok {
@@ -910,7 +943,7 @@ fn target_steps(f: &Facts) -> Vec<(Step, Option<Finding>)> {
         path.push(ping_summary(p));
         warn |= p.loss_pct > 2.0 || p.stddev_ms.is_some_and(|j| j > 30.0);
     } else {
-        path.push("does not answer ping".into());
+        path.push("does not answer ping (many sites block it)".into());
     }
     if let Some(m) = &t.pmtu {
         match &m.result {

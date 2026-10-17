@@ -194,6 +194,8 @@ pub enum Captive {
 #[derive(Debug, Clone, Default)]
 pub struct TargetFacts {
     pub host: String,
+    /// The system resolver (hosts file, mDNS, VPN split DNS): what apps actually use.
+    pub system: Option<Result<f64, String>>,
     pub dns: Vec<DnsProbe>,
     pub dns_reference: Option<DnsProbe>,
     pub http: Option<Http>,

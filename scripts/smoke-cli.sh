@@ -92,6 +92,32 @@ run 1 snapshot "$tmp/a.macora"                    # must refuse to overwrite
 
 # -l must match ifconfig -l exactly, in the same order.
 if [[ "$("$bin" list)" == "$(ifconfig -l)" ]]; then pass=$((pass+1)); echo 'ok    macora list == ifconfig -l'; else fail=$((fail+1)); echo 'FAIL  macora list differs from ifconfig -l' >&2; fi
+
+# ---- diagnose: modes, formats, validation and redaction (live, read-only) ----
+run_ok_or_fail diagnose quick
+run_ok_or_fail diagnose quick md
+run_ok_or_fail diagnose quick html redact
+run_ok_or_fail diagnose quick strict
+run_ok_or_fail diagnose quick to localhost
+run_ok_or_fail diagnose quick count 2 interval 1
+run 1 diagnose to 'a;b'
+run 1 diagnose to
+run 1 show speed
+run 1 diagnose from "$fixture"
+diag_json="$("$bin" diagnose quick json 2>/dev/null || true)"
+if printf '%s' "$diag_json" | python3 -c 'import sys,json; d=json.load(sys.stdin); assert {"steps","verdict","advice","also","target"} <= set(d); assert all({"step","status","detail","ms"} <= set(s) for s in d["steps"]); assert d["steps"][0]["step"] == "Link"'; then
+  pass=$((pass+1)); echo 'ok    diagnose json has every documented key'
+else fail=$((fail+1)); echo 'FAIL  diagnose json keys' >&2; fi
+# redact must remove this network's router address from every format.
+gw="$(route -n get default 2>/dev/null | awk '/gateway:/{print $2}')"
+if [[ -n "$gw" ]]; then
+  leaked=0
+  for fmt in "" json md html; do
+    if "$bin" diagnose quick redact $fmt 2>/dev/null | grep -qF "$gw"; then leaked=1; echo "FAIL  diagnose redact $fmt still shows $gw" >&2; fi
+  done
+  if [[ $leaked -eq 0 ]]; then pass=$((pass+1)); echo 'ok    diagnose redact hides the router address in text, json, md and html'; else fail=$((fail+1)); fi
+fi
+
 # raw must equal ifconfig, apart from the ether lines macOS may mask for some launchers.
 if diff <("$bin" raw | grep -v ether) <(ifconfig -a | grep -v ether) >/dev/null; then pass=$((pass+1)); echo 'ok    macora raw == ifconfig -a (ether lines excluded)'; else fail=$((fail+1)); echo 'FAIL  macora raw differs from ifconfig -a' >&2; fi
 

@@ -41,18 +41,28 @@ struct Sparkline: View {
 @MainActor struct DiagnosisWizard: View {
     @EnvironmentObject private var store: NetworkStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var quick = false
+    @State private var speed = false
+    @State private var site = ""
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Why is my network slow?").font(.title2.bold())
-                    Text("Checks each layer from your adapter outward and stops at the first real problem. It sends a few packets and one DNS lookup — only when you press the button.").font(.callout).foregroundStyle(.secondary)
+                    Text("Checks each layer from your adapter outward: link, router, internet, sign-in page, DNS, HTTPS, packet size, Wi-Fi and IPv6. It sends a few packets and DNS lookups, only when you press the button.").font(.callout).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button { Task { await store.runDiagnosis() } } label: {
+                Button { Task { await store.runDiagnosis(site: site, quick: quick, speed: speed) } } label: {
                     if store.diagnosing { ProgressView().controlSize(.small).padding(.horizontal, 10) } else { Label(store.diagnosis == nil ? "Run check" : "Run again", systemImage: "waveform.path.ecg") }
                 }.buttonStyle(.borderedProminent).disabled(store.diagnosing)
             }
+            HStack(spacing: 12) {
+                TextField("Check a site too (e.g. github.com)", text: $site).textFieldStyle(.roundedBorder).frame(maxWidth: 300)
+                    .onSubmit { Task { await store.runDiagnosis(site: site, quick: quick, speed: speed) } }
+                Toggle("Quick (about 2 s)", isOn: $quick).toggleStyle(.checkbox).help("Skips Wi-Fi details and the packet-size search.")
+                Toggle("Speed test (about 15 s)", isOn: $speed).toggleStyle(.checkbox).help("Runs Apple's networkQuality, which uses real bandwidth and Apple's servers.")
+                Spacer()
+            }.controlSize(.small).disabled(store.diagnosing)
             if let report = store.diagnosis {
                 VStack(spacing: 0) {
                     ForEach(report.steps) { step in
@@ -61,7 +71,7 @@ struct Sparkline: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 HStack { Text(step.step).font(.headline); Text(step.status.label).font(.caption).foregroundStyle(color(step.status)) }
                                 Text(step.explanation).font(.caption).foregroundStyle(.secondary)
-                                Text(store.present(step.detail)).font(.callout.monospaced()).textSelection(.enabled)
+                                Text(store.presentDiagnosis(step.detail)).font(.callout.monospaced()).textSelection(.enabled)
                             }
                             Spacer()
                         }.padding(.vertical, 12).accessibilityElement(children: .combine)
@@ -70,17 +80,31 @@ struct Sparkline: View {
                 }.padding(.horizontal, 18).padding(.vertical, 6).card()
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: report.worst == .ok ? "checkmark.seal.fill" : "lightbulb.fill").foregroundStyle(color(report.worst)).font(.title2)
-                    VStack(alignment: .leading, spacing: 4) { Text("What this means").font(.headline); Text(report.verdict).font(.callout) }
+                    VStack(alignment: .leading, spacing: 4) { Text("What this means").font(.headline); Text(store.presentDiagnosis(report.verdict)).font(.callout) }
                 }.padding(18).frame(maxWidth: .infinity, alignment: .leading).background(color(report.worst).opacity(0.10), in: RoundedRectangle(cornerRadius: 16))
                     .transition(reduceMotion ? .identity : .opacity.combined(with: .move(edge: .bottom)))
-                Button { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(store.summary(redact: true), forType: .string) } label: { Label("Copy redacted summary", systemImage: "doc.on.doc") }
+                if !report.advice.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("What to try").font(.headline)
+                        ForEach(Array(report.advice.enumerated()), id: \.offset) { i, tip in
+                            HStack(alignment: .top, spacing: 10) { Text("\(i + 1).").font(.callout.monospacedDigit()).foregroundStyle(.secondary); Text(store.presentDiagnosis(tip)).font(.callout) }
+                        }
+                    }.padding(18).frame(maxWidth: .infinity, alignment: .leading).card()
+                }
+                if !report.also.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Also noticed").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+                        ForEach(Array(report.also.enumerated()), id: \.offset) { _, line in Text("· " + store.presentDiagnosis(line)).font(.caption).foregroundStyle(.secondary) }
+                    }
+                }
+                Button { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(report.markdown(redact: true), forType: .string) } label: { Label("Copy report (addresses masked)", systemImage: "doc.on.doc") }
             } else if !store.diagnosing {
                 ContentUnavailableView("Nothing checked yet", systemImage: "waveform.path.ecg", description: Text("Press Run check. Nothing is sent until you do."))
             }
         }.animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: store.diagnosis)
     }
     private func color(_ s: DiagnosisStatus) -> Color {
-        switch s { case .ok: return .green; case .warn: return .orange; case .fail: return .red; case .skip: return .secondary }
+        switch s { case .ok: return .green; case .warn: return .orange; case .fail: return .red; case .skip: return .secondary; case .info: return .blue }
     }
 }
 

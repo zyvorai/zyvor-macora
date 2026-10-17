@@ -129,6 +129,8 @@ private enum Page: String, CaseIterable, Identifiable {
             if let command = page?.command { await inspect(command) }
             if page == .doctor { await store.diagnose() }
             if page == .doctor, store.demo, store.diagnosis == nil { await store.runDiagnosis() }
+            // `--autorun` runs the real check on opening Diagnostics: used to verify the app against the CLI.
+            if page == .doctor, !store.demo, store.diagnosis == nil, ProcessInfo.processInfo.arguments.contains("--autorun") { await store.runDiagnosis() }
         }
     }
     private var header: some View {

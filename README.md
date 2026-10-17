@@ -25,7 +25,7 @@
 | When this happens | MACORA gives you |
 | --- | --- |
 | `ifconfig` prints a wall of 17 interfaces and you only care about Wi-Fi | Interfaces **grouped** (Network, Bridges, Tunnels, System, Loopback) with each flag, scoped IPv6 address and bridge member explained |
-| "The internet is slow" and you do not know where to look | **`macora diagnose`**: link → router → internet → DNS → MTU, stopping at the first real problem, in plain language |
+| "The internet is slow" and you do not know where to look | **`macora diagnose`**: link → router → internet → DNS → HTTPS → path MTU (+ Wi-Fi, IPv6), naming the lowest layer that is really wrong, with what to try |
 | You need to send someone your network details | **`redact`** masks IPs and MACs; export Markdown, HTML or JSON; snapshots are private (0600) and never overwritten |
 | "What changed since it last worked?" | Capture a baseline, then **diff** field by field, in the app or `macora diff` |
 | You want it in a dashboard or a script | `watch prometheus`, NDJSON, `json` on every command, shell completions, Shortcuts actions |
@@ -89,16 +89,38 @@ There are **zero external Rust crates and zero external Swift packages**. SwiftU
 
 ```text
 $ macora diagnose
-OK    Link      An active adapter has a routable IPv4 address
-OK    Gateway   192.168.1.1: 0% loss, 3.7 ms average
-OK    Internet  1.1.1.1:443 connected in 9 ms
-OK    DNS       example.com resolved in 36 ms (may be cached)
-OK    MTU       1500-byte packets reach the gateway
+OK    Link       en0 (Wi-Fi): 192.0.2.8, global IPv6
+INFO  Route      Default route uses en0 (Wi-Fi), gateway 192.0.2.1.
+OK    Wi-Fi      5GHz ch 40 (80MHz) · 802.11ax · signal -64 dBm, noise -94 dBm (SNR 30 dB) · link rate 360 Mbps
+OK    Gateway    192.0.2.1: 0% loss, 4.3 ms avg, jitter 0.9 ms
+OK    Internet   1.1.1.1 10 ms · 8.8.8.8 11 ms · 9.9.9.9 138 ms; ping 1.1.1.1: 0% loss, 9.0 ms avg, jitter 0.6 ms
+OK    Portal     No sign-in page is intercepting web traffic.
+OK    DNS        192.0.2.1 6.0 ms/13 ms · reference 1.1.1.1 10 ms/12 ms · system resolver 41 ms
+OK    HTTPS      www.apple.com over IPv4: dns 11 ms · tcp 17 ms · tls 13 ms · first byte 22 ms (total 103 ms); over IPv6 total 96 ms
+WARN  MTU        Path MTU to 1.1.1.1 is 1480 bytes, below this Mac's 1500 (1480 is typical of IPv6-in-IPv4 (6in4) tunnels).
+OK    IPv6       IPv6 reaches the internet (13 ms).
 
-VERDICT  No problem found on this path right now. If an app is slow, the issue is probably the remote service.
+VERDICT  Packets larger than 1480 bytes are dropped on the way to the internet (this Mac sends up to 1500).
+
+WHAT TO TRY
+  1. Set this connection's MTU to 1480: System Settings → Network → Details → Hardware → MTU: Manual.
+  2. Or ask your ISP/VPN admin to clamp TCP MSS; large uploads and some sites stall when this is wrong.
 ```
 
-Each layer is checked only if the one below it works, and the verdict blames the **lowest** failing layer (router unreachable → "the problem is local", router fine but no internet → "restart the modem or call your ISP"). `diagnose` exits 1 when a layer fails and supports `json`. It sends a few ICMP packets to your gateway, one TCP connection to 1.1.1.1:443 and one DNS lookup, **only when you run it**. The app has the same check on the Diagnostics page, in the menu bar panel and as a Shortcuts action.
+![macora diagnose redact in a terminal](docs/ux/cli-diagnose.png)
+
+That is real output from a real Mac, lightly edited (documentation addresses instead of mine, one IPv6 DNS server line dropped, two runs' lines combined), and the MTU warning is a real finding: this network drops packets over 1480 bytes while the Mac sends 1500. The walk goes bottom-up and the verdict blames the **lowest layer that is actually wrong**. A router that ignores ping but passes traffic is a warning, not an outage. Words extend it:
+
+```sh
+macora diagnose quick               # about 2 s: skip Wi-Fi details and the packet-size search
+macora diagnose to github.com       # why is THIS site slow? DNS per server, HTTPS stages, path
+macora diagnose speed               # add Apple's networkQuality: Mbps and responsiveness
+macora diagnose redact md           # a shareable report with your addresses masked (also: html, json)
+macora diagnose count 10 interval 30   # repeat and summarize what flapped
+macora diagnose strict              # exit 1 on warnings too
+```
+
+It checks link, route, Wi-Fi quality, router (loss and jitter), internet (three targets), captive portals, every DNS server separately, an HTTPS timing breakdown, **path MTU**, IPv6 and proxies, only when you run it, and changes nothing. See [docs/DIAGNOSE.md](docs/DIAGNOSE.md) for how each check works, the thresholds, what is sent and the caveats. The app has the same check on the Diagnostics page (with a site field, quick and speed options, advice and a masked "Copy report"), in the menu bar panel and as a Shortcuts action.
 
 ## CLI cookbook
 
@@ -112,7 +134,7 @@ macora list up                        # ...only the ones that are up (also: down
 macora ipv6 group Tunnels             # Words combine: one family, one group
 macora explain en0                    # Flags, IPv6 and role in plain words
 macora doctor                         # Local interface findings (no network traffic)
-macora diagnose                       # Gateway, internet, DNS and MTU walk-through
+macora diagnose                       # Link, router, internet, DNS, HTTPS, path MTU, Wi-Fi, IPv6 + verdict
 macora ping 1.1.1.1 count 5           # Loss and latency
 macora trace example.com              # Hop-by-hop path
 macora report html redact > report.html
@@ -181,6 +203,7 @@ MACORA uses macOS network services and locations rather than Linux NetworkManage
 | Doc | What is in it |
 | --- | --- |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Collector, JSON schema, native app structure |
+| [docs/DIAGNOSE.md](docs/DIAGNOSE.md) | How `diagnose` works: checks, thresholds, formats, privacy, caveats, tests |
 | [docs/FEATURES.md](docs/FEATURES.md) | Exact macOS ↔ NetworkManager-style mapping |
 | [docs/INTERACTIVE.md](docs/INTERACTIVE.md) | REPL and TUI guide |
 | [docs/UX.md](docs/UX.md) | Design and interaction notes |

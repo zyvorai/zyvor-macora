@@ -200,3 +200,41 @@ fn real_runner_runs_programs_without_a_shell_and_reports_failures() {
     );
     assert!(started.elapsed() < Duration::from_secs(4));
 }
+
+#[test]
+fn exit_status_is_one_on_failure_and_on_warnings_only_when_strict() {
+    use zyvor_macora::{cli::diagnose_exit, diagnose::Status::*};
+    for strict in [false, true] {
+        assert!(
+            diagnose_exit(Fail, strict).is_err(),
+            "a failing layer always exits 1"
+        );
+        for fine in [Ok, Info, Skip] {
+            assert!(
+                diagnose_exit(fine, strict).is_ok(),
+                "{fine:?} strict={strict}"
+            );
+        }
+    }
+    assert!(
+        diagnose_exit(Warn, false).is_ok(),
+        "warnings alone do not fail a script"
+    );
+    let e = diagnose_exit(Warn, true).unwrap_err();
+    assert!(e.contains("strict"), "{e}");
+}
+
+#[test]
+fn repeated_runs_keep_the_most_serious_outcome() {
+    use zyvor_macora::{cli::worse, diagnose::Status::*};
+    assert_eq!(worse(Ok, Ok), Ok);
+    assert_eq!(worse(Ok, Warn), Warn);
+    assert_eq!(worse(Warn, Ok), Warn);
+    assert_eq!(worse(Warn, Fail), Fail);
+    assert_eq!(worse(Fail, Ok), Fail);
+    assert_eq!(
+        worse(Info, Skip),
+        Ok,
+        "informational steps are not problems"
+    );
+}

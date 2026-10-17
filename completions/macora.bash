@@ -9,9 +9,9 @@ _macora() {
     interface|explain|set) COMPREPLY=($(compgen -W "$(macora list 2>/dev/null)" -- "$cur")); return;;
   esac
   if [[ $COMP_CWORD -eq 1 ]]; then
-    COMPREPLY=($(compgen -W "interactive repl tui topology report resolve show explain routes path dns services wifi neighbors sockets doctor diagnose ping trace watch snapshot diff subnet probe set completions all up down list compact ipv4 ipv6 raw json redact html md prometheus apply from interface group count interval timeout format theme color $(macora list 2>/dev/null)" -- "$cur"))
+    COMPREPLY=($(compgen -W "interactive repl tui topology report resolve show explain routes path dns services wifi neighbors sockets doctor diagnose ping trace watch snapshot diff subnet probe set completions all up down list compact ipv4 ipv6 raw json redact html md prometheus apply from interface group count interval timeout format theme color speed quick strict to $(macora list 2>/dev/null)" -- "$cur"))
   else
-    COMPREPLY=($(compgen -W "all up down list compact ipv4 ipv6 raw json redact html md prometheus apply from interface group count interval timeout format theme color $(macora list 2>/dev/null)" -- "$cur"))
+    COMPREPLY=($(compgen -W "all up down list compact ipv4 ipv6 raw json redact html md prometheus apply from interface group count interval timeout format theme color speed quick strict to $(macora list 2>/dev/null)" -- "$cur"))
   fi
 }
 complete -F _macora macora

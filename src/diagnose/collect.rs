@@ -209,7 +209,7 @@ fn http(r: &dyn Runner, host: &str, family: u8) -> Http {
     let url = format!("https://{host}/");
     let flag = if family == 6 { "-6" } else { "-4" };
     let args = [
-        "-s",
+        "-sS",
         "-o",
         "/dev/null",
         "--max-time",
@@ -223,11 +223,11 @@ fn http(r: &dyn Runner, host: &str, family: u8) -> Http {
         Ok((_, o, e)) => match parse::curl_timing(&o, host, family) {
             Some(mut h) => {
                 if !h.ok {
-                    let why = e.trim().lines().last().unwrap_or("").trim();
+                    let why = curl_why(&e);
                     h.error = Some(if why.is_empty() {
                         "no HTTP response".into()
                     } else {
-                        why.to_string()
+                        why
                     });
                 }
                 h
@@ -235,13 +235,10 @@ fn http(r: &dyn Runner, host: &str, family: u8) -> Http {
             None => Http {
                 host: host.into(),
                 family,
-                error: Some(
-                    e.trim()
-                        .lines()
-                        .last()
-                        .unwrap_or("curl gave no timing")
-                        .to_string(),
-                ),
+                error: Some(match curl_why(&e) {
+                    w if w.is_empty() => "curl gave no timing".to_string(),
+                    w => w,
+                }),
                 ..Default::default()
             },
         },
@@ -252,6 +249,17 @@ fn http(r: &dyn Runner, host: &str, family: u8) -> Http {
             ..Default::default()
         },
     }
+}
+
+/// The last line of curl's stderr without its `curl: (6) ` prefix, e.g. "Could not resolve host: x".
+fn curl_why(stderr: &str) -> String {
+    let line = stderr.trim().lines().last().unwrap_or("").trim();
+    let line = line.strip_prefix("curl: ").unwrap_or(line);
+    let line = match (line.starts_with('('), line.find(')')) {
+        (true, Some(i)) => line[i + 1..].trim(),
+        _ => line,
+    };
+    line.to_string()
 }
 
 fn captive(r: &dyn Runner) -> Captive {
@@ -340,7 +348,7 @@ fn target_facts(r: &dyn Runner, host: &str, servers: &[String]) -> TargetFacts {
             detail: describe(&d),
         }
     };
-    let (dns, reference, http4, ping_stats) = thread::scope(|s| {
+    let (dns, reference, http4, ping_stats, system) = thread::scope(|s| {
         let dns: Vec<_> = servers
             .iter()
             .filter(|sv| probe::valid_host(sv))
@@ -349,6 +357,19 @@ fn target_facts(r: &dyn Runner, host: &str, servers: &[String]) -> TargetFacts {
         let reference = s.spawn(|| lookup(REFERENCE_DNS));
         let h = s.spawn(|| http(r, host, 4));
         let p = s.spawn(|| ping(r, host, 10, None, Some(0.2), 6));
+        let sys = s.spawn(|| {
+            let started = Instant::now();
+            match r.run(
+                "/usr/bin/dscacheutil",
+                &["-q", "host", "-a", "name", host],
+                6,
+            ) {
+                Ok((_, o, _)) if !o.trim().is_empty() => {
+                    Ok(started.elapsed().as_secs_f64() * 1000.0)
+                }
+                _ => Err(format!("{host} did not resolve")),
+            }
+        });
         (
             dns.into_iter()
                 .filter_map(|h| h.join().ok())
@@ -356,6 +377,7 @@ fn target_facts(r: &dyn Runner, host: &str, servers: &[String]) -> TargetFacts {
             reference.join().ok(),
             h.join().ok(),
             p.join().ok().flatten(),
+            sys.join().ok(),
         )
     });
     // Measure the path to the site's own address when we learned it.
@@ -370,6 +392,7 @@ fn target_facts(r: &dyn Runner, host: &str, servers: &[String]) -> TargetFacts {
         });
     TargetFacts {
         host: host.into(),
+        system,
         dns,
         dns_reference: reference,
         http: http4,

@@ -43,6 +43,12 @@ import UniformTypeIdentifiers
         guard UserDefaults.standard.bool(forKey: "macora.maskAddresses") else { return text }
         return SnapshotPrivacy.redacted(text, snapshots: [snapshot, baseline].compactMap { $0 })
     }
+    /// Diagnosis text also names the router and DNS servers, which are not in the interface list, so
+    /// masking uses address patterns in addition to the interface addresses.
+    func presentDiagnosis(_ text: String) -> String {
+        let text = present(text)
+        return UserDefaults.standard.bool(forKey: "macora.maskAddresses") ? DiagnosisPrivacy.redact(text) : text
+    }
     func present(_ change: ConfigurationChange) -> String {
         if UserDefaults.standard.bool(forKey: "macora.maskAddresses"), ["Addresses", "MAC"].contains(change.field) {
             return "\(change.interface) · \(change.field): <masked> → <masked>"
@@ -125,24 +131,35 @@ import UniformTypeIdentifiers
             findings = try JSONDecoder().decode([String: [String]].self, from: Data(text.utf8))["findings"] ?? []
         } catch { self.actionError = error.localizedDescription }
     }
-    func runDiagnosis() async {
+    func runDiagnosis(site: String = "", quick: Bool = false, speed: Bool = false) async {
         guard !diagnosing else { return }
         diagnosing = true
         defer { diagnosing = false }
+        let site = site.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !site.isEmpty, !SiteName.isValid(site) { actionError = "Enter a site name like github.com (letters, digits, dots and hyphens)."; return }
         if demo {
             try? await Task.sleep(for: .milliseconds(600))
             diagnosis = DiagnosisReport(steps: [
-                .init(step: "Link", status: .ok, detail: "Simulated: an active adapter has a routable IPv4 address"),
-                .init(step: "Gateway", status: .ok, detail: "Simulated: 0% loss, 3.7 ms average"),
-                .init(step: "Internet", status: .ok, detail: "Simulated: connected in 9 ms"),
-                .init(step: "DNS", status: .warn, detail: "Simulated: example.com resolved in 412 ms"),
-                .init(step: "MTU", status: .ok, detail: "Simulated: 1500-byte packets reach the gateway")
-            ], verdict: "Simulated result. Connected, but DNS is slow. A different resolver may speed up page loads.")
+                .init(step: "Link", status: .ok, detail: "Simulated: en0 (Wi-Fi): a routable IPv4 address, global IPv6"),
+                .init(step: "Wi-Fi", status: .ok, detail: "Simulated: 5GHz ch 40 (80MHz) · 802.11ax · signal -58 dBm, noise -94 dBm (SNR 36 dB)"),
+                .init(step: "Gateway", status: .ok, detail: "Simulated: 0% loss, 3.7 ms avg, jitter 0.6 ms", ms: 3.7),
+                .init(step: "Internet", status: .ok, detail: "Simulated: 1.1.1.1 9 ms · 8.8.8.8 11 ms", ms: 9),
+                .init(step: "DNS", status: .warn, detail: "Simulated: your DNS server answers in 412 ms; 1.1.1.1 answers in 14 ms", ms: 412),
+                .init(step: "HTTPS", status: .ok, detail: "Simulated: dns 14 · tcp 11 · tls 13 · first byte 23 ms", ms: 95),
+                .init(step: "MTU", status: .warn, detail: "Simulated: path MTU is 1480 bytes, below this Mac's 1500"),
+                .init(step: "IPv6", status: .ok, detail: "Simulated: IPv6 reaches the internet")
+            ], verdict: "Simulated result. Connected, but DNS is slow (your server answers in 412 ms). A different resolver may speed up page loads.",
+               advice: ["Try 1.1.1.1 or 8.8.8.8: System Settings → Network → your connection → Details → DNS."],
+               also: ["Packets larger than 1480 bytes are dropped on the way to the internet."], target: site.isEmpty ? nil : site)
             return
         }
+        var args = ["diagnose", "json"]
+        if quick { args.append("quick") }
+        if speed { args.append("speed") }
+        if !site.isEmpty { args += ["to", site] }
         do {
             // diagnose exits 1 when a layer fails but still prints the full report.
-            let text = try await ProcessRunner.run(cli, ["diagnose", "json"], timeout: 45, acceptedStatuses: [0, 1])
+            let text = try await ProcessRunner.run(cli, args, timeout: speed ? 120 : 60, acceptedStatuses: [0, 1])
             diagnosis = try DiagnosisReport.decode(text)
         } catch { actionError = error.localizedDescription }
     }

@@ -990,11 +990,7 @@ fn diagnose_command(a: &Args, t: &Theme) -> Result<(), String> {
         } else {
             emit(&show(round_line(round + 1, rounds, &report, t)))?;
         }
-        worst = match (worst, report.worst()) {
-            (diagnose::Status::Fail, _) | (_, diagnose::Status::Fail) => diagnose::Status::Fail,
-            (diagnose::Status::Warn, _) | (_, diagnose::Status::Warn) => diagnose::Status::Warn,
-            _ => diagnose::Status::Ok,
-        };
+        worst = worse(worst, report.worst());
         history.push(report);
         if round + 1 < rounds {
             std::thread::sleep(Duration::from_secs_f64(pause));
@@ -1012,9 +1008,24 @@ fn diagnose_command(a: &Args, t: &Theme) -> Result<(), String> {
             summary
         })?;
     }
+    diagnose_exit(worst, a.strict)
+}
+
+/// The more serious of two outcomes (Fail > Warn > everything else).
+pub fn worse(a: diagnose::Status, b: diagnose::Status) -> diagnose::Status {
+    use diagnose::Status::*;
+    match (a, b) {
+        (Fail, _) | (_, Fail) => Fail,
+        (Warn, _) | (_, Warn) => Warn,
+        _ => Ok,
+    }
+}
+
+/// `diagnose` exits 1 on a failure, and on a warning too when `strict` was asked for.
+pub fn diagnose_exit(worst: diagnose::Status, strict: bool) -> Result<(), String> {
     match worst {
         diagnose::Status::Fail => Err("Diagnosis found a failing layer".into()),
-        diagnose::Status::Warn if a.strict => Err("Diagnosis found a warning (strict)".into()),
+        diagnose::Status::Warn if strict => Err("Diagnosis found a warning (strict)".into()),
         _ => Ok(()),
     }
 }

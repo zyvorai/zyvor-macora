@@ -1,16 +1,15 @@
 # Validation and hardware acceptance
 
-## Executed for 0.3.1
+## Executed for the `diagnose` rework
 
 Run on an Apple silicon Mac (macOS 27.x, Rust 1.98, Swift 6):
 
-- 57 Rust tests (parser, scenarios, interactive/TUI, and feature tests: ping parsing, verdict logic, host validation, HTML/Prometheus output, completions, format validation, ifconfig-style words).
-- 4 pseudo-terminal tests (terminal restoration, palette, pause/refresh).
-- rustfmt and Clippy with warnings denied.
-- 27 Swift tests, including diagnosis decoding, sparkline history and redacted summaries.
-- `scripts/smoke-cli.sh`: 59 read-only checks (including `macora list` == `ifconfig -l`) of the release binary against the live Mac (valid JSON/NDJSON, snapshot mode 0600 and no-overwrite, error exits).
-- `scripts/build-macos.sh` and `scripts/package-mac.sh`: app build, DMG, pkg, tarball and verified checksums.
-- Screenshots in `docs/ux/` captured from the running app in `--demo` mode.
+- **Rust:** `cargo test --locked`: parser/JSON/path-MTU tests, ~70 diagnose scenarios, the collector replayed against a fake runner, CLI validation and real-socket tests, plus the earlier suites. `cargo clippy -D warnings` and `cargo fmt --check` are clean.
+- **Path-MTU search:** exact for every MTU from 576 to 1500, never probes a size twice, at most 4 rounds.
+- **Mutation checks:** 16 deliberate breakages (for example removing the "router ignores ping" downgrade, dropping jitter from the ping parser, counting a 169.254 address as usable, redacting public probe targets) must make the suite fail. The first pass left two survivors and a later one a third; each became a test and all are now caught.
+- **Swift:** `swift test` (decoding old and new JSON, redaction, Markdown, site-name validation, an explanation for every step) and `scripts/check-contract.py`, which fails if the Rust step names or statuses and the app's list drift apart (also verified to fail when either side is changed).
+- **Live, read-only:** `scripts/smoke-cli.sh` against the real network (all modes and formats, validation errors, redaction removes the router address in text/JSON/Markdown/HTML), and the app built and run live with `--autorun` to confirm it decodes the real CLI output.
+- **Measured, not assumed:** the path MTU the tool reports was compared with a manual `ping -D` bisection (1480 passes, 1492 fails); the Wi-Fi scan's effect on latency was measured (4 ms became 40-60 ms) and is why it runs last.
 
 ## Not executed
 

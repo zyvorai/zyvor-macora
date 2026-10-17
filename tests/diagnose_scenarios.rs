@@ -815,6 +815,7 @@ fn speed_results_are_classified() {
 fn target_facts() -> TargetFacts {
     TargetFacts {
         host: "shop.example.test".into(),
+        system: Some(Ok(15.0)),
         dns: vec![probe("192.0.2.1", 12.0, 0.0)],
         dns_reference: Some(probe("1.1.1.1", 14.0, 0.0)),
         http: Some(http(12.0, 22.0, 36.0, 70.0, 80.0)),
@@ -848,6 +849,7 @@ fn site_dns_failures() {
     let mut f = Facts::healthy_example();
     let mut t = target_facts();
     t.dns = vec![dead("192.0.2.1")];
+    t.system = Some(Err("shop.example.test did not resolve".into()));
     f.target = Some(t.clone());
     let r = run(f);
     assert_eq!(st(&r, "Site DNS"), Status::Fail);
@@ -1112,6 +1114,11 @@ struct Fake {
     dead_dns: Vec<&'static str>,
     captive_body: &'static str,
     v4_route: &'static str,
+    curl_stderr: &'static str,
+    /// dig answers NXDOMAIN for this name.
+    nxdomain: Option<&'static str>,
+    /// dscacheutil (the system resolver) cannot resolve this name.
+    system_unknown: Option<&'static str>,
     calls: AtomicU32,
 }
 impl Fake {
@@ -1124,6 +1131,9 @@ impl Fake {
             captive_body:
                 "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>\n200",
             v4_route: "route-v4.txt",
+            curl_stderr: "",
+            nxdomain: None,
+            system_unknown: None,
             calls: AtomicU32::new(0),
         }
     }
@@ -1189,6 +1199,9 @@ impl Runner for Fake {
                     return ok(fx("dig-timeout.txt"));
                 }
                 let name = *args.last().unwrap();
+                if self.nxdomain == Some(name) {
+                    return ok(fx("dig-nxdomain.txt"));
+                }
                 ok(fx(if name.starts_with("macora-") {
                     "dig-nxdomain.txt"
                 } else {
@@ -1199,14 +1212,18 @@ impl Runner for Fake {
                 if args.iter().any(|a| a.contains("captive.apple.com")) {
                     return ok(self.captive_body.to_string());
                 }
-                ok(fx(if self.internet_up {
-                    "curl-ok.txt"
-                } else {
-                    "curl-fail.txt"
-                }))
+                if !self.internet_up {
+                    return Ok((false, fx("curl-fail.txt"), self.curl_stderr.to_string()));
+                }
+                ok(fx("curl-ok.txt"))
             }
             "/usr/sbin/system_profiler" => ok(fx("wifi-5ghz.json")),
-            "/usr/bin/dscacheutil" => ok("name: example.com\nip_address: 198.51.100.9\n".into()),
+            "/usr/bin/dscacheutil" => {
+                if self.system_unknown.is_some_and(|h| args.contains(&h)) {
+                    return ok(String::new());
+                }
+                ok("name: example.com\nip_address: 198.51.100.9\n".into())
+            }
             "/usr/bin/networkQuality" => ok(fx("networkquality.json")),
             other => Err(format!("not faked: {other}")),
         }
@@ -1546,4 +1563,149 @@ fn collector_treats_a_self_assigned_address_as_no_address() {
     assert_eq!(st(&r, "Link"), Status::Fail);
     assert!(detail(&r, "Link").contains("169.254") && detail(&r, "Link").contains("DHCP"));
     assert_eq!(st(&r, "Gateway"), Status::Skip);
+}
+
+#[test]
+fn site_that_does_not_resolve_skips_its_https_and_path_steps() {
+    let mut f = Facts::healthy_example();
+    let mut t = target_facts();
+    t.dns = vec![dead("192.0.2.1")];
+    t.system = Some(Err("x did not resolve".into()));
+    t.dns_reference = Some(dead("1.1.1.1"));
+    t.http = None;
+    t.ping = None;
+    f.target = Some(t);
+    let r = run(f);
+    assert_eq!(st(&r, "Site DNS"), Status::Fail);
+    assert_eq!(st(&r, "Site HTTPS"), Status::Skip);
+    assert_eq!(st(&r, "Site path"), Status::Skip);
+    assert!(detail(&r, "Site path").contains("does not resolve"));
+    assert_eq!(
+        r.verdict.matches("does not resolve anywhere").count(),
+        1,
+        "one clear verdict, not three failures"
+    );
+}
+
+#[test]
+fn a_site_that_ignores_ping_is_information_not_a_failure() {
+    let mut f = Facts::healthy_example();
+    let mut t = target_facts();
+    t.ping = None;
+    t.pmtu = None;
+    f.target = Some(t);
+    let r = run(f);
+    assert_eq!(st(&r, "Site path"), Status::Ok);
+    assert!(detail(&r, "Site path").contains("many sites block it"));
+}
+
+#[test]
+fn curl_errors_reach_the_report_without_their_prefix() {
+    for (stderr, want) in [
+        (
+            "curl: (6) Could not resolve host: www.apple.com",
+            "Could not resolve host: www.apple.com",
+        ),
+        (
+            "curl: (28) Operation timed out after 8001 milliseconds with 0 bytes received",
+            "Operation timed out after 8001 milliseconds with 0 bytes received",
+        ),
+        ("curl: (35) SSL connect error", "SSL connect error"),
+        ("", "no HTTP response"),
+    ] {
+        let fake = Fake {
+            internet_up: false,
+            curl_stderr: stderr,
+            ..Fake::healthy()
+        };
+        let f = collect(
+            &fake,
+            &snapshot(),
+            &Options {
+                quick: true,
+                ..Default::default()
+            },
+        );
+        let h = f.http4.as_ref().unwrap();
+        assert!(!h.ok);
+        assert_eq!(h.error.as_deref(), Some(want), "stderr {stderr:?}");
+    }
+}
+
+#[test]
+fn site_known_only_to_the_system_resolver_is_a_warning_and_still_checked() {
+    // Regression: `diagnose to localhost` (hosts file), `to nas.local` (mDNS) and VPN-only names were
+    // reported as "does not resolve anywhere" because only the configured DNS servers were asked.
+    let mut f = Facts::healthy_example();
+    let mut t = target_facts();
+    t.host = "nas.local".into();
+    t.dns = vec![dead("192.0.2.1")];
+    t.dns_reference = Some(dead("1.1.1.1"));
+    t.system = Some(Ok(3.0));
+    f.target = Some(t);
+    let r = run(f);
+    assert_eq!(st(&r, "Site DNS"), Status::Warn);
+    assert!(detail(&r, "Site DNS").contains("the system resolver finds it"));
+    assert!(
+        r.verdict.contains("resolves it another way"),
+        "{}",
+        r.verdict
+    );
+    assert_eq!(
+        st(&r, "Site HTTPS"),
+        Status::Ok,
+        "the site is still checked"
+    );
+    assert_ne!(r.worst(), Status::Fail, "exit status stays 0");
+}
+
+#[test]
+fn collector_site_that_no_resolver_knows_is_a_failure_and_skips_the_rest() {
+    let fake = Fake {
+        nxdomain: Some("gone.example.test"),
+        system_unknown: Some("gone.example.test"),
+        ..Fake::healthy()
+    };
+    let f = collect(
+        &fake,
+        &snapshot(),
+        &Options {
+            quick: true,
+            target: Some("gone.example.test".into()),
+            ..Default::default()
+        },
+    );
+    assert!(matches!(f.target.as_ref().unwrap().system, Some(Err(_))));
+    let r = analyze(&f);
+    assert_eq!(st(&r, "Site DNS"), Status::Fail);
+    assert_eq!(
+        (st(&r, "Site HTTPS"), st(&r, "Site path")),
+        (Status::Skip, Status::Skip)
+    );
+}
+
+#[test]
+fn collector_site_only_the_system_resolver_knows_is_a_warning() {
+    let fake = Fake {
+        nxdomain: Some("nas.local"),
+        ..Fake::healthy()
+    };
+    let f = collect(
+        &fake,
+        &snapshot(),
+        &Options {
+            quick: true,
+            target: Some("nas.local".into()),
+            ..Default::default()
+        },
+    );
+    assert!(matches!(f.target.as_ref().unwrap().system, Some(Ok(_))));
+    let r = analyze(&f);
+    assert_eq!(st(&r, "Site DNS"), Status::Warn);
+    assert_eq!(
+        st(&r, "Site HTTPS"),
+        Status::Ok,
+        "{}",
+        detail(&r, "Site HTTPS")
+    );
 }
