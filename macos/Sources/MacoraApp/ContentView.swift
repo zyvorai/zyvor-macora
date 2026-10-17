@@ -80,7 +80,7 @@ private enum Page: String, CaseIterable, Identifiable {
                     Section("Intelligence") { ForEach([Page.doctor, .compare, .activity]) { p in Label(p.rawValue, systemImage: p.icon).tag(p).padding(.vertical, 4) } }
                 }.listStyle(.sidebar)
                 VStack(alignment: .leading, spacing: 5) {
-                    Label(Host.current().localizedName ?? "This Mac", systemImage: "desktopcomputer").font(.caption.bold())
+                    Label(store.demo ? "Demo Mac" : (Host.current().localizedName ?? "This Mac"), systemImage: "desktopcomputer").font(.caption.bold())
                     Text(store.demo ? "Demo data · changes disabled" : store.paused ? "Monitoring paused" : "Local collection · no cloud").font(.caption2).foregroundStyle(.secondary)
                 }.padding(14).frame(maxWidth: .infinity, alignment: .leading).background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12)).padding(14)
             }.navigationSplitViewColumnWidth(220)
