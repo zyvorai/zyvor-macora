@@ -17,7 +17,7 @@ jobs:
       HAVE_CERTS: ${{ secrets.MACOS_CERTS_P12 != '' }}
       HAVE_NOTARY: ${{ secrets.NOTARY_KEY_P8 != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.TAG }}
       - uses: dtolnay/rust-toolchain@stable
