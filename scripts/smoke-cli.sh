@@ -38,7 +38,7 @@ run 0 en0
 run 0 en0 raw
 run 0 en0 mtu 1400 --from "$fixture"
 run 0 report html redact
-run 0 diagnose json
+run_ok_or_fail diagnose json   # exit 1 is correct when a layer fails (e.g. a CI VM gateway that drops ping)
 run 1 list up down
 run 1 nosuch0
 run 0 --all --compact --redact
