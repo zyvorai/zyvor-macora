@@ -1,6 +1,6 @@
 # Validation and hardware acceptance
 
-## Executed for 0.3.0
+## Executed for 0.3.1
 
 Run on an Apple silicon Mac (macOS 27.x, Rust 1.98, Swift 6):
 

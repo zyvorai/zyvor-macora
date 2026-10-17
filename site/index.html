@@ -54,11 +54,11 @@ footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(-
 <div class="card"><h3>Zero dependencies</h3><p>No external Rust crates or Swift packages. Apache 2.0.</p></div>
 </div>
 <h2 id="install">Download and install</h2>
-<p class="sub">Version 0.3.0 · macOS 14 or newer · Apple silicon · signed by Zyvor AI Labs and <b>notarized by Apple</b>, so it opens without a Gatekeeper warning.</p>
+<p class="sub">Version 0.3.1 · macOS 14 or newer · Apple silicon · signed by Zyvor AI Labs and <b>notarized by Apple</b>, so it opens without a Gatekeeper warning.</p>
 <div class="grid">
-<div class="card"><h3>Disk image (.dmg)</h3><p>Open it and drag MACORA into Applications. Best for most people.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.0/Macora-0.3.0.dmg">Download .dmg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.0/Macora-0.3.0.dmg.sha256">SHA-256</a></p></div>
-<div class="card"><h3>Installer (.pkg)</h3><p>Double-click to install into Applications. Handy for managed Macs and scripts.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.0/Macora-0.3.0.pkg">Download .pkg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.0/Macora-0.3.0.pkg.sha256">SHA-256</a></p></div>
-<div class="card"><h3>Command line only</h3><p>The <code>macora</code> CLI with man page and shell completions.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.0/macora-0.3.0-arm64-apple-darwin.tar.gz">Download .tar.gz</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.0/macora-0.3.0-arm64-apple-darwin.tar.gz.sha256">SHA-256</a></p></div>
+<div class="card"><h3>Disk image (.dmg)</h3><p>Open it and drag MACORA into Applications. Best for most people.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.dmg">Download .dmg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.dmg.sha256">SHA-256</a></p></div>
+<div class="card"><h3>Installer (.pkg)</h3><p>Double-click to install into Applications. Handy for managed Macs and scripts.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.pkg">Download .pkg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/Macora-0.3.1.pkg.sha256">SHA-256</a></p></div>
+<div class="card"><h3>Command line only</h3><p>The <code>macora</code> CLI with man page and shell completions.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/macora-0.3.1-arm64-apple-darwin.tar.gz">Download .tar.gz</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.3.1/macora-0.3.1-arm64-apple-darwin.tar.gz.sha256">SHA-256</a></p></div>
 </div>
 <h3>Install steps</h3>
 <ol>
@@ -67,7 +67,7 @@ footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(-
 <li>Choose <b>Open</b> if macOS asks to confirm an app downloaded from the internet. It is notarized, so there is no “unidentified developer” block.</li>
 <li>To look around without touching your network, start it with simulated data: <code>open -a MACORA --args --demo</code>.</li>
 </ol>
-<p class="sub">Verify a download: <code>shasum -a 256 -c Macora-0.3.0.dmg.sha256</code>. Uninstall: drag MACORA from Applications to the Trash. It runs no background service and leaves nothing else behind except its preferences. The CLI tarball is signed but not notarized, so if macOS blocks <code>macora</code> after download, run <code>xattr -d com.apple.quarantine macora</code> once.</p>
+<p class="sub">Verify a download: <code>shasum -a 256 -c Macora-0.3.1.dmg.sha256</code>. Uninstall: drag MACORA from Applications to the Trash. It runs no background service and leaves nothing else behind except its preferences. The CLI tarball is signed but not notarized, so if macOS blocks <code>macora</code> after download, run <code>xattr -d com.apple.quarantine macora</code> once.</p>
 <h2>Build from source</h2>
 <pre>git clone https://github.com/zyvorai/zyvor-macora.git &amp;&amp; cd zyvor-macora
 ./scripts/install-macos.sh ~/.local   # CLI, man page, completions

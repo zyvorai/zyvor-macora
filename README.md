@@ -45,6 +45,18 @@
 | --- | --- |
 | ![Diagnosis, light](docs/ux/native-light-diagnostics.png) | ![Interfaces, dark](docs/ux/native-dark-interfaces.png) |
 
+## In the terminal
+
+![macora in a terminal: one interface, which are up, the original ifconfig text, and the diagnosis](docs/ux/macora-cli.gif)
+
+*Real `macora` output from a live Mac, rendered into an image by [`scripts/render-terminal.py`](scripts/render-terminal.py). Addresses are masked with `redact`; the diagnosis shows the gateway's private address.*
+
+![macora redact group Network](docs/ux/cli-overview.png)
+
+It works like `ifconfig`, with plain words instead of dashes: `macora en0`, `macora en0 raw` (ifconfig's own text), `macora list up`. Colors turn off in pipes and with `NO_COLOR`.
+
+And the full-screen workspace, `macora tui`:
+
 ![Actual Rust terminal rendering against the sanitized fixture](docs/tui-preview.png)
 
 ## Quickstart
@@ -62,7 +74,7 @@ macora tui                                # full-screen workspace
 open dist/Macora.app                      # or add --args --demo for simulated data
 ```
 
-Download `Macora-0.3.0.dmg` (drag to Applications) or `Macora-0.3.0.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. A [Homebrew formula template](packaging/homebrew/macora.rb) is included; no tap is published yet.
+Download `Macora-0.3.1.dmg` (drag to Applications) or `Macora-0.3.1.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. A [Homebrew formula template](packaging/homebrew/macora.rb) is included; no tap is published yet.
 
 There are **zero external Rust crates and zero external Swift packages**. SwiftUI, Charts, CoreWLAN, CoreLocation, AppKit and AppIntents are Apple system frameworks. No server, webview or daemon.
 
@@ -184,7 +196,7 @@ site/                 GitHub Pages landing page
 
 ## Validation status
 
-Run on an Apple silicon Mac (the 0.3.0 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **57 Rust tests, 4 pseudo-terminal tests, 27 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **59-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, notarization, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
+Run on an Apple silicon Mac (the 0.3.1 DMG and pkg were also signed, notarized, stapled and accepted by Gatekeeper): **59 Rust tests, 4 pseudo-terminal tests, 27 Swift tests**, rustfmt, Clippy with warnings denied, the app build, packaging (DMG, pkg, tarball, verified checksums) and a **59-check read-only smoke test** of the CLI against the live machine. **Not yet run:** Intel Macs, notarization, administrator-authorized configuration changes, Wi-Fi join/disconnect and Location-permission flows. See [TESTING.md](docs/TESTING.md) for exact checks and the hardware acceptance checklist. Screenshots show simulated demo data.
 
 ## Roadmap
 

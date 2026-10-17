@@ -155,9 +155,34 @@ fn positionals(cmd: &str, rest: &[&String]) -> usize {
         _ => 0,
     }
 }
+/// `macora color always diagnose` means `macora diagnose color always`: a command wins wherever it appears
+/// after leading option words.
+fn lead_with_command(args: Vec<String>) -> Vec<String> {
+    let mut j = 0;
+    while j < args.len() {
+        let t = args[j].as_str();
+        if export::COMMANDS.contains(&t) {
+            let mut out = vec![args[j].clone()];
+            out.extend(args[..j].iter().cloned());
+            out.extend(args[j + 1..].iter().cloned());
+            return out;
+        }
+        if t.starts_with('-') {
+            j += if VALUE_FLAGS.contains(&t) { 2 } else { 1 };
+        } else if VALUE_WORDS.iter().any(|(w, _)| *w == t) {
+            j += 2;
+        } else if flag_word(t).is_some() || FORMAT_WORDS.contains(&t) {
+            j += 1;
+        } else {
+            break;
+        }
+    }
+    args
+}
 /// Translates the word grammar into the flags the parser understands. Dash flags pass through
 /// unchanged, so existing scripts keep working.
 pub fn words_to_flags(args: Vec<String>) -> Vec<String> {
+    let args = lead_with_command(args);
     let mut out: Vec<String> = Vec::with_capacity(args.len() + 2);
     let mut cmd: Option<String> = None;
     let mut left = 0usize;
@@ -717,7 +742,13 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                 );
             }
             if a.redact {
-                output = view::redact(output, &s);
+                // Table view: keep columns aligned. Raw/JSON/Prometheus text has no columns to keep.
+                let table = !a.raw && !a.json && a.format.as_deref() != Some("prometheus");
+                output = if table {
+                    view::redact_aligned(output, &s)
+                } else {
+                    view::redact(output, &s)
+                };
             }
             emit(&output)
         }
@@ -900,7 +931,11 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                     view::interfaces(&s, &a.filter, &t, &rates)
                 };
                 if a.redact {
-                    text = view::redact(text, &s);
+                    text = if a.json || a.format.as_deref() == Some("prometheus") {
+                        view::redact(text, &s)
+                    } else {
+                        view::redact_aligned(text, &s)
+                    };
                 }
                 if !a.json && io::stdout().is_terminal() {
                     text = format!("\x1b[2J\x1b[H{text}");

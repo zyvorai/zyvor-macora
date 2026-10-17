@@ -2,7 +2,7 @@
 class Macora < Formula
   desc "Explainable network cockpit for macOS: CLI, TUI and diagnostics"
   homepage "https://github.com/zyvorai/zyvor-macora"
-  url "https://github.com/zyvorai/zyvor-macora/archive/refs/tags/v0.3.0.tar.gz"
+  url "https://github.com/zyvorai/zyvor-macora/archive/refs/tags/v0.3.1.tar.gz"
   sha256 "REPLACE_WITH_RELEASE_TARBALL_SHA256"
   license "Apache-2.0"
   depends_on "rust" => :build

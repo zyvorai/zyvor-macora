@@ -330,6 +330,36 @@ pub fn rates(old: &Snapshot, new: &Snapshot, seconds: f64) -> BTreeMap<String, (
     }
     result
 }
+/// Like [`redact`], but keeps table columns aligned: `address/prefix` is replaced by the placeholder
+/// plus its prefix, padded with spaces to the original width.
+pub fn redact_aligned(mut text: String, s: &Snapshot) -> String {
+    let mut cidrs: Vec<(String, String)> = Vec::new();
+    for i in &s.interfaces {
+        for a in &i.addresses {
+            if a.prefix.is_some() {
+                let mask = if a.ip.contains(':') {
+                    "<IPv6>"
+                } else {
+                    "<IPv4>"
+                };
+                let original = a.cidr();
+                let prefix = original[a.ip.len()..].to_string();
+                let replacement = format!("{mask}{prefix}");
+                let pad = original
+                    .chars()
+                    .count()
+                    .saturating_sub(replacement.chars().count());
+                cidrs.push((original, format!("{replacement}{}", " ".repeat(pad))));
+            }
+        }
+    }
+    cidrs.sort_by_key(|(o, _)| std::cmp::Reverse(o.len()));
+    cidrs.dedup();
+    for (original, replacement) in cidrs {
+        text = text.replace(&original, &replacement);
+    }
+    redact(text, s)
+}
 pub fn redact(mut text: String, s: &Snapshot) -> String {
     let mut secrets = Vec::new();
     for i in &s.interfaces {

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
 ### CLI: words, not dashes, and it works like ifconfig
 
@@ -9,6 +9,18 @@
 - The older `--flag` spellings keep working as undocumented aliases, so scripts and CI do not break. Help, man page, completions and README show only words. Completions now complete interface names.
 - The native app calls the CLI with words as well.
 - Fix: `raw` on an offline capture no longer prefixes the OFFLINE banner.
+- A command wins over leading option words (`macora color always diagnose`), and a name after options is the interface (`macora all en0`).
+
+### Output
+
+- Much more colorful: orange title and idle state, per-group headers, scope and attribute colors, green RX and orange TX totals. Address columns line up, including with `redact` (placeholders are padded). Colors still turn off in pipes and with `NO_COLOR`.
+- The collapsed-group hint says `run macora all` instead of a dash flag.
+
+### Packaging
+
+- The pkg installs a `/usr/local/bin/macora` link to the CLI bundled in Macora.app, so `macora` works after installing the app.
+- Add `scripts/render-terminal.py`, which renders real `macora` output (with `redact`) into README screenshots and a typing GIF.
+
 
 ## 0.3.0
 

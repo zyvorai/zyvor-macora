@@ -1,0 +1,8 @@
+#!/bin/bash
+# Put the bundled command line tool on PATH. Runs as root during pkg installation.
+# Installer arguments: $1 package, $2 install location, $3 target volume.
+set -e
+dest="${3:-/}"
+mkdir -p "$dest/usr/local/bin"
+ln -sf /Applications/Macora.app/Contents/Resources/macora "$dest/usr/local/bin/macora"
+exit 0

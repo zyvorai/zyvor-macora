@@ -353,9 +353,49 @@ fn words_translate_to_flags() {
         ["show", "--all", "--interface", "en0", "--all"]
     );
     assert_eq!(w(&["show", "en0"]), ["show", "--interface", "en0", "--all"]);
-    // Existing dash flags and their values pass through untouched.
+    // Existing dash flags and their values pass through untouched (the command still leads).
+    assert_eq!(
+        w(&["report", "--format", "html"]),
+        ["report", "--format", "html"]
+    );
     assert_eq!(
         w(&["--format", "html", "report"]),
-        ["--format", "html", "report"]
+        ["report", "--format", "html"]
+    );
+}
+
+#[test]
+fn redacted_table_keeps_columns_aligned() {
+    let out = stdout(&["en0", "redact", "color", "never", "from", fixture()]);
+    let scope_col: Vec<usize> = out
+        .lines()
+        .filter(|l| l.contains("IPv4") || l.contains("IPv6"))
+        .map(|l| {
+            ["link-local", "global-range", "private", "unknown"]
+                .iter()
+                .filter_map(|s| l.find(s))
+                .min()
+                .expect("scope column")
+        })
+        .collect();
+    assert!(
+        scope_col.len() >= 2 && scope_col.iter().all(|c| *c == scope_col[0]),
+        "{out}"
+    );
+    assert!(out.contains("<IPv6>") && out.contains("<IPv4>") && !out.contains("2001:db8"));
+}
+
+#[test]
+fn a_command_wins_over_leading_option_words() {
+    use zyvor_macora::cli::words_to_flags;
+    let w = |v: &[&str]| words_to_flags(v.iter().map(|s| s.to_string()).collect());
+    assert_eq!(
+        w(&["color", "always", "diagnose"]),
+        ["diagnose", "--color", "always"]
+    );
+    assert_eq!(w(&["json", "report"]), ["report", "--json"]);
+    assert_eq!(
+        w(&["color", "always", "en0"]),
+        ["show", "--color", "always", "--interface", "en0", "--all"]
     );
 }
