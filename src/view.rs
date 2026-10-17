@@ -95,6 +95,10 @@ pub fn bytes(n: f64) -> String {
         format!("{:.0} B", n)
     }
 }
+/// One indented output line.
+fn nl(prefix: &str, body: String) -> String {
+    format!("{prefix}{body}\n")
+}
 pub fn interfaces(
     s: &Snapshot,
     f: &Filter,
@@ -211,50 +215,50 @@ pub fn interfaces(
             }
             if !f.compact {
                 if let Some(mac) = &i.mac {
-                    out += &format!(
-                        "    {}\n",
-                        format!("{} {}", t.muted("MAC"), t.paint("38;5;105", mac))
+                    out += &nl(
+                        "    ",
+                        format!("{} {}", t.muted("MAC"), t.paint("38;5;105", mac)),
                     );
                 }
                 if let Some(media) = &i.media {
-                    out += &format!(
-                        "    {}\n",
-                        format!("{} {}", t.muted("Media"), t.paint("38;5;80", media))
+                    out += &nl(
+                        "    ",
+                        format!("{} {}", t.muted("Media"), t.paint("38;5;80", media)),
                     );
                 }
                 if !i.members.is_empty() {
-                    out += &format!(
-                        "    {}\n",
+                    out += &nl(
+                        "    ",
                         format!(
                             "{} {}",
                             t.muted("Bridge members:"),
                             t.paint("1;38;5;214", &i.members.join(", "))
-                        )
+                        ),
                     );
                 }
                 if f.all || f.interface.is_some() {
-                    out += &format!(
-                        "    {}\n",
+                    out += &nl(
+                        "    ",
                         format!(
                             "{} {}",
                             t.muted("Flags"),
                             t.paint("38;5;110", &i.flags.join(" · "))
-                        )
+                        ),
                     );
                     if !i.options.is_empty() {
-                        out += &format!(
-                            "    {}\n",
+                        out += &nl(
+                            "    ",
                             format!(
                                 "{} {}",
                                 t.muted("Options"),
                                 t.paint("38;5;110", &i.options.join(" · "))
-                            )
+                            ),
                         );
                     }
                 }
                 if let Some(c) = &i.counters {
-                    out += &format!(
-                        "    {}\n",
+                    out += &nl(
+                        "    ",
                         format!(
                             "{} {} {} {} {}",
                             t.muted("Total"),
@@ -262,7 +266,7 @@ pub fn interfaces(
                             t.paint("1;38;5;46", &bytes(c.rx as f64)),
                             t.muted("· TX"),
                             t.paint("1;38;5;208", &bytes(c.tx as f64))
-                        )
+                        ),
                     );
                 }
             }
@@ -286,8 +290,8 @@ pub fn interfaces(
     for w in &s.warnings {
         out += &format!("{}\n", t.paint("1;38;5;208", &format!("Warning: {w}")));
     }
-    out += &format!(
-        "{}\n",
+    out += &nl(
+        "",
         format!(
             "{} {} {} {} {} {} {}",
             t.muted("Explore:"),
@@ -297,7 +301,7 @@ pub fn interfaces(
             t.muted("·"),
             t.paint("38;5;51", "macora routes"),
             t.muted("· macora watch")
-        )
+        ),
     );
     out
 }
