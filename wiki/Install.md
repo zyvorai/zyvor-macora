@@ -21,6 +21,8 @@ brew install zyvorai/tap/macora          # the command line tool only
 
 Install one or the other: both provide the `macora` command.
 
+Recent Homebrew requires tap trust. If it reports that `zyvorai/tap` is not trusted, run `brew trust --cask zyvorai/tap/macora` (or `brew trust --formula zyvorai/tap/macora` for the CLI) and install again. Warnings about other taps you have installed are unrelated.
+
 ## Command line tarball
 
 `macora-X.Y.Z-arm64-apple-darwin.tar.gz` contains the binary, man page and shell completions. It is signed but **not notarized**; if macOS blocks it after download, run `xattr -d com.apple.quarantine macora` once.
