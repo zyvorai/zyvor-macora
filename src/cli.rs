@@ -49,6 +49,7 @@ COMMANDS
   set IFACE up|down     Preview administrative state change
   set IFACE mtu NUMBER  Preview MTU change; add apply to execute on macOS
   completions SHELL     Print bash, zsh or fish completions
+  init SHELL            Shell setup for eval: completions, and inline suggestions in zsh
 
 WORDS  (after a command or interface)
   all                   Include tunnels, Apple system links and loopback
@@ -162,7 +163,7 @@ fn flag_word(t: &str) -> Option<&'static str> {
 fn positionals(cmd: &str, rest: &[&String]) -> usize {
     match cmd {
         "explain" | "snapshot" | "subnet" | "probe" | "resolve" | "ping" | "trace"
-        | "completions" => 1,
+        | "completions" | "init" => 1,
         "diff" => 2,
         "set" => {
             if rest.get(1).map(|s| s.as_str()) == Some("mtu") {
@@ -426,9 +427,16 @@ fn get(a: &Args) -> Result<Snapshot, String> {
 fn select(mut s: Snapshot, f: &Filter) -> Result<Snapshot, String> {
     if let Some(name) = &f.interface {
         if !s.interfaces.iter().any(|i| i.name == *name) {
-            return Err(format!(
-                "Interface {name} not found (if you meant a command, see --help)"
-            ));
+            let known = export::COMMANDS
+                .iter()
+                .chain(export::WORDS)
+                .copied()
+                .chain(s.interfaces.iter().map(|i| i.name.as_str()));
+            let hint = match export::did_you_mean(name, known) {
+                Some(g) => format!(" Did you mean `{g}`?"),
+                None => " If you meant a command, see --help.".into(),
+            };
+            return Err(format!("Interface {name} not found.{hint}"));
         }
     }
     s.interfaces.retain(|i| f.matches(i));
@@ -604,7 +612,7 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     }
     let expected = match cmd {
         "explain" | "snapshot" | "subnet" | "probe" | "resolve" | "ping" | "trace"
-        | "completions" => Some(2),
+        | "completions" | "init" => Some(2),
         "diff" => Some(3),
         "set" => None,
         _ => Some(1),
@@ -679,6 +687,7 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
             })
         }
         "completions" => emit(export::completions(&a.words[1])?.trim_end()),
+        "init" => emit(export::init(&a.words[1])?.trim_end()),
         "ping" => {
             let count = a.count.unwrap_or(4).min(50);
             let stats = probe::ping_stats(&a.words[1], count, None)?;

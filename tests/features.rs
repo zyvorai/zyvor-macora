@@ -357,3 +357,37 @@ fn a_command_wins_over_leading_option_words() {
         ["show", "--color", "always", "--interface", "en0", "--all"]
     );
 }
+
+#[test]
+fn every_command_has_a_completion_description() {
+    let z = export::completions("zsh").unwrap();
+    for c in export::COMMANDS {
+        assert!(
+            z.contains(&format!("'{c}:")),
+            "zsh completion lacks a description for {c}"
+        );
+    }
+}
+
+#[test]
+fn typos_get_a_suggestion_and_init_emits_scripts() {
+    use zyvor_macora::export::did_you_mean;
+    let cands = || export::COMMANDS.iter().chain(export::WORDS).copied();
+    assert_eq!(did_you_mean("dia", cands()).as_deref(), Some("diagnose"));
+    assert_eq!(
+        did_you_mean("diagnoes", cands()).as_deref(),
+        Some("diagnose")
+    );
+    assert_eq!(did_you_mean("zzzzz", cands()), None);
+    assert_eq!(did_you_mean("", cands()), None);
+    let zsh = export::init("zsh").unwrap();
+    assert!(zsh.contains("compdef _macora macora") && zsh.contains("__macora_suggestion"));
+    assert!(
+        !zsh.contains("#compdef"),
+        "init output is evaluated, not autoloaded"
+    );
+    assert!(export::init("fish")
+        .unwrap()
+        .contains("-d 'why is my network slow?'"));
+    assert!(export::init("tcsh").is_err());
+}
