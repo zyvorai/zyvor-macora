@@ -7,8 +7,8 @@
 <key>CFBundleIconFile</key><string>Macora.icns</string>
 <key>CFBundleExecutable</key><string>Macora</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>0.4.1</string>
-<key>CFBundleVersion</key><string>6</string>
+<key>CFBundleShortVersionString</key><string>0.5.0</string>
+<key>CFBundleVersion</key><string>7</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>NSHighResolutionCapable</key><true/>
 <key>NSLocationWhenInUseUsageDescription</key><string>MACORA uses Location permission only when you request Wi-Fi discovery, because macOS protects nearby Wi-Fi network names.</string>

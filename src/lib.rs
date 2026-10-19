@@ -7,6 +7,7 @@ pub mod export;
 pub mod insight;
 pub mod json;
 pub mod model;
+pub mod netcmds;
 pub mod parse;
 pub mod probe;
 pub mod session;

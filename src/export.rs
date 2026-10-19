@@ -28,6 +28,13 @@ pub const COMMANDS: &[&str] = &[
     "subnet",
     "probe",
     "set",
+    "scan",
+    "apps",
+    "lan",
+    "mtr",
+    "lookup",
+    "firewall",
+    "throughput",
     "completions",
     "init",
 ];
@@ -58,6 +65,13 @@ const COMMAND_HELP: &[&str] = &[
     "network, mask and host range of IPv4/PREFIX",
     "TCP reachability check of IP:PORT",
     "preview an interface state or MTU change",
+    "nearby Wi-Fi networks and channel crowding",
+    "traffic by process",
+    "devices on your local network",
+    "per-hop loss and latency",
+    "compare DNS answers across resolvers",
+    "application firewall and pf status",
+    "LAN speed against an iperf3 server",
     "print bash, zsh or fish completions",
     "shell setup: completions and suggestions, for eval",
 ];
@@ -90,6 +104,7 @@ pub const WORDS: &[&str] = &[
     "quick",
     "strict",
     "to",
+    "type",
 ];
 pub const FORMATS: &[&str] = &["table", "json", "ndjson", "md", "html", "prometheus"];
 pub const THEMES: &[&str] = &["default", "mono", "high-contrast"];
@@ -231,6 +246,7 @@ const BASH: &str = r#"_macora() {
     theme) COMPREPLY=($(compgen -W "@THEMES@" -- "$cur")); return;;
     color) COMPREPLY=($(compgen -W "auto always never" -- "$cur")); return;;
     group) COMPREPLY=($(compgen -W "@GROUPS@" -- "$cur")); return;;
+    type) COMPREPLY=($(compgen -W "A AAAA MX TXT NS CNAME SOA CAA PTR SRV" -- "$cur")); return;;
     from) COMPREPLY=($(compgen -f -- "$cur")); return;;
     to) COMPREPLY=($(compgen -A hostname -- "$cur")); return;;
     count|interval|timeout) return;;
@@ -238,7 +254,7 @@ const BASH: &str = r#"_macora() {
   esac
   if [[ $COMP_CWORD -eq 2 ]]; then
     case "$cmd" in
-      ping|trace|resolve) COMPREPLY=($(compgen -A hostname -- "$cur")); return;;
+      ping|trace|resolve|mtr|lookup|throughput) COMPREPLY=($(compgen -A hostname -- "$cur")); return;;
       snapshot|diff) COMPREPLY=($(compgen -f -- "$cur")); return;;
       completions|init) COMPREPLY=($(compgen -W "bash zsh fish" -- "$cur")); return;;
       subnet|probe) return;;
@@ -273,13 +289,14 @@ fn zsh_function() -> String {
     theme) compadd -- @THEMES@; return;;
     color) compadd -- auto always never; return;;
     group) compadd -- @GROUPS@; return;;
+    type) compadd -- A AAAA MX TXT NS CNAME SOA CAA PTR SRV; return;;
     from) _files; return;;
     to) _hosts; return;;
     count|interval|timeout) _message -e numbers 'number'; return;;
     interface) compadd -- $ifaces; return;;
   esac
   case $words[2] in
-    ping|trace|resolve) (( CURRENT == 3 )) && { _hosts; return };;
+    ping|trace|resolve|mtr|lookup|throughput) (( CURRENT == 3 )) && { _hosts; return };;
     snapshot) (( CURRENT == 3 )) && { _files; return };;
     diff) (( CURRENT <= 4 )) && { _files; return };;
     subnet) (( CURRENT == 3 )) && { _message 'IPv4/PREFIX, for example 192.168.1.0/24'; return };;
@@ -368,13 +385,14 @@ fn fish_script() -> String {
         "complete -c macora -n 'not __fish_use_subcommand; and not __fish_prev_arg_in to' -a '@WORDS@' -d word
 complete -c macora -n 'not __fish_use_subcommand; and not __fish_prev_arg_in to' -a '(macora list 2>/dev/null)' -d interface
 complete -c macora -n '__fish_prev_arg_in to' -a '(__fish_print_hostnames)'
-complete -c macora -n '__fish_seen_subcommand_from ping trace resolve' -a '(__fish_print_hostnames)'
+complete -c macora -n '__fish_seen_subcommand_from ping trace resolve mtr lookup throughput' -a '(__fish_print_hostnames)'
 complete -c macora -n '__fish_seen_subcommand_from snapshot diff' -F
 complete -c macora -n '__fish_seen_subcommand_from completions init' -a 'bash zsh fish'
 complete -c macora -n '__fish_prev_arg_in format' -a '@FORMATS@'
 complete -c macora -n '__fish_prev_arg_in theme' -a '@THEMES@'
 complete -c macora -n '__fish_prev_arg_in color' -a 'auto always never'
 complete -c macora -n '__fish_prev_arg_in group' -a '@GROUPS@'
+complete -c macora -n '__fish_prev_arg_in type' -a 'A AAAA MX TXT NS CNAME SOA CAA PTR SRV'
 complete -c macora -n '__fish_prev_arg_in from' -F
 ",
     );

@@ -89,6 +89,20 @@ Recent Homebrew requires tap trust. If it reports that `zyvorai/tap` is not trus
 
 There are **zero external Rust crates and zero external Swift packages**. SwiftUI, Charts, CoreWLAN, CoreLocation, AppKit and AppIntents are Apple system frameworks. No server, webview or daemon.
 
+## More commands
+
+```sh
+macora scan                 # nearby Wi-Fi networks, channel crowding and a quieter-channel hint
+macora apps interval 3      # which processes are moving traffic right now
+macora lan                  # devices answering on your subnet, with names where DNS knows them
+macora mtr 1.1.1.1 count 20 # per-hop loss, latency and jitter
+macora lookup github.com type MX   # compare your resolver with 1.1.1.1, 8.8.8.8, 9.9.9.9
+macora firewall             # application firewall and pf state (read-only)
+macora throughput HOST      # LAN speed against `iperf3 -s` on another machine
+```
+
+All of them are read-only and macOS-only. `scan` needs Location Services to allow your terminal before macOS reveals other networks; `lan` pings every address in your subnet (up to a /22), so run it only on networks you manage; `apps` shows per-process rates, not per-connection accounting.
+
 ## Why is my network slow?
 
 ```text

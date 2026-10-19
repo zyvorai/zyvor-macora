@@ -1,7 +1,7 @@
 use crate::{
     collect, diagnose, export, insight,
     model::{json_string, Snapshot},
-    parse, probe,
+    netcmds, parse, probe,
     view::{self, Filter, Theme},
 };
 use std::{
@@ -48,6 +48,13 @@ COMMANDS
   probe IP:PORT         Explicit TCP reachability check (IPv6: [::1]:443)
   set IFACE up|down     Preview administrative state change
   set IFACE mtu NUMBER  Preview MTU change; add apply to execute on macOS
+  scan                  Nearby Wi-Fi networks, channels, signal and crowding advice
+  apps                  Traffic by process, sampled for interval S (default 2)
+  lan                   Devices answering on your local network (sweeps the subnet)
+  mtr HOST              Per-hop loss and latency over count N rounds (default 10)
+  lookup HOST           Compare DNS answers from your resolver, 1.1.1.1, 8.8.8.8 and 9.9.9.9; add type MX
+  firewall              Application firewall and pf status (read-only)
+  throughput HOST       LAN speed to an iperf3 server (needs `brew install iperf3`)
   completions SHELL     Print bash, zsh or fish completions
   init SHELL            Shell setup for eval: completions, and inline suggestions in zsh
 
@@ -100,6 +107,8 @@ pub struct Args {
     pub raw: bool,
     /// `diagnose to HOST`: also check one site.
     pub to: Option<String>,
+    /// `lookup HOST type MX`: DNS record type.
+    pub rtype: Option<String>,
     /// `diagnose speed`: run Apple's networkQuality (opt-in; it uses real bandwidth).
     pub speed: bool,
     /// `diagnose strict`: exit 1 on warnings too.
@@ -143,6 +152,7 @@ const VALUE_WORDS: &[(&str, &str)] = &[
     ("theme", "--theme"),
     ("color", "--color"),
     ("to", "--to"),
+    ("type", "--type"),
 ];
 const VALUE_FLAGS: &[&str] = &[
     "--from",
@@ -155,6 +165,7 @@ const VALUE_FLAGS: &[&str] = &[
     "--theme",
     "--color",
     "--to",
+    "--type",
 ];
 fn flag_word(t: &str) -> Option<&'static str> {
     FLAG_WORDS.iter().find(|(w, _)| *w == t).map(|(_, f)| *f)
@@ -163,7 +174,7 @@ fn flag_word(t: &str) -> Option<&'static str> {
 fn positionals(cmd: &str, rest: &[&String]) -> usize {
     match cmd {
         "explain" | "snapshot" | "subnet" | "probe" | "resolve" | "ping" | "trace"
-        | "completions" | "init" => 1,
+        | "completions" | "init" | "mtr" | "lookup" | "throughput" => 1,
         "diff" => 2,
         "set" => {
             if rest.get(1).map(|s| s.as_str()) == Some("mtu") {
@@ -313,6 +324,7 @@ pub fn arguments(args: Vec<String>) -> Result<Args, String> {
             "--strict" => out.strict = true,
             "--quick" => out.quick = true,
             "--to" => out.to = Some(value(&mut args)?),
+            "--type" => out.rtype = Some(value(&mut args)?),
             "--list" => out.list = true,
             "--down" => out.down = true,
             "--ipv4" | "--ipv6" => {
@@ -550,10 +562,36 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     if a.theme.is_some() && cmd != "tui" {
         return Err("--theme only applies to tui".into());
     }
+    const LIVE: &[&str] = &[
+        "scan",
+        "apps",
+        "lan",
+        "mtr",
+        "lookup",
+        "firewall",
+        "throughput",
+    ];
+    if LIVE.contains(&cmd) && !cfg!(target_os = "macos") {
+        return Err(format!("{cmd} requires macOS"));
+    }
+    if LIVE.contains(&cmd) && a.from.is_some() {
+        return Err(format!("{cmd} is a live check; from FILE is not supported"));
+    }
     if ["diagnose", "ping", "trace"].contains(&cmd) && a.from.is_some() {
         return Err(format!("{cmd} is a live check; from FILE is not supported"));
     }
-    if ["ping", "trace"].contains(&cmd) && a.redact {
+    if [
+        "ping",
+        "trace",
+        "mtr",
+        "lookup",
+        "apps",
+        "firewall",
+        "throughput",
+    ]
+    .contains(&cmd)
+        && a.redact
+    {
         return Err(format!(
             "{cmd} output has nothing to redact; use redact with diagnose"
         ));
@@ -566,6 +604,8 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     }
     if a.redact
         && ![
+            "scan",
+            "lan",
             "show",
             "explain",
             "doctor",
@@ -612,7 +652,7 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
     }
     let expected = match cmd {
         "explain" | "snapshot" | "subnet" | "probe" | "resolve" | "ping" | "trace"
-        | "completions" | "init" => Some(2),
+        | "completions" | "init" | "mtr" | "lookup" | "throughput" => Some(2),
         "diff" => Some(3),
         "set" => None,
         _ => Some(1),
@@ -711,6 +751,71 @@ pub fn run(args: Vec<String>) -> Result<(), String> {
                 )
             } else {
                 view::safe(out.trim_end())
+            })
+        }
+        "scan" => {
+            let aps = netcmds::wifi_scan()?;
+            {
+                let text = if a.json {
+                    netcmds::scan_json(&aps, a.redact)
+                } else {
+                    netcmds::render_scan(&aps, a.redact)
+                };
+                emit(text.trim_end())
+            }
+        }
+        "apps" => {
+            let secs = a.interval.unwrap_or(2.0).clamp(1.0, 30.0) as u32;
+            let rows = netcmds::apps(secs)?;
+            emit(netcmds::render_apps(&rows, secs as f64, a.json).trim_end())
+        }
+        "lan" => {
+            let s = select(get(&a)?, &Filter::default())?;
+            let pick = s.interfaces.iter().find_map(|i| {
+                let wanted = match &a.filter.interface {
+                    Some(n) => &i.name == n,
+                    None => i.name.starts_with("en") && i.up(),
+                };
+                if !wanted {
+                    return None;
+                }
+                i.addresses.iter().find_map(|ad| {
+                    ad.ip
+                        .parse::<std::net::Ipv4Addr>()
+                        .ok()
+                        .zip(ad.prefix)
+                        .map(|(ip, p)| (i.name.clone(), ip.to_string(), p))
+                })
+            });
+            let (name, ip, prefix) = pick
+                .ok_or("No active IPv4 interface found; name one with: macora lan interface en0")?;
+            let hosts = netcmds::lan_sweep(&ip, prefix, &name)?;
+            emit(netcmds::render_lan(&hosts, &name, a.redact, a.json).trim_end())
+        }
+        "mtr" => {
+            let rounds = a.count.unwrap_or(10);
+            let hops = netcmds::hop_stats(&a.words[1], rounds)?;
+            emit(netcmds::render_hops(&a.words[1], rounds.clamp(1, 30), &hops, a.json).trim_end())
+        }
+        "lookup" => {
+            let rtype = a.rtype.as_deref().unwrap_or("A");
+            let answers = netcmds::lookup(&a.words[1], rtype)?;
+            emit(netcmds::render_lookup(&a.words[1], rtype, &answers, a.json).trim_end())
+        }
+        "firewall" => {
+            let text = netcmds::firewall_status()?;
+            emit(&if a.json {
+                format!("{{\"output\":{}}}", json_string(&text))
+            } else {
+                text.trim_end().to_string()
+            })
+        }
+        "throughput" => {
+            let text = netcmds::throughput(&a.words[1])?;
+            emit(&if a.json {
+                format!("{{\"output\":{}}}", json_string(&text))
+            } else {
+                text.trim_end().to_string()
             })
         }
         "diagnose" => diagnose_command(&a, &t),

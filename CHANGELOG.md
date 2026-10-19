@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+- **`macora init SHELL`**: one line in your shell startup, `eval "$(macora init zsh)"`, sets up completion (`macora init fish | source`, `macora init bash` for the others). In zsh it also shows grey inline suggestions for macora's commands and words (skipped when zsh-autosuggestions is loaded; Right arrow accepts).
+- **Richer completion.** zsh shows a description next to every command and completes arguments by context: hostnames after `ping`, `trace`, `resolve` and `to`, files for `snapshot`, `diff` and `from`, interfaces for `explain` and `set`, `up`/`down`/`mtu` after `set IFACE`. fish gets descriptions and the same contexts; bash gets the hostname, file and shell-name contexts.
+- **Typo hints.** `macora dia` now answers "Did you mean `diagnose`?" instead of only saying the interface was not found.
+- **New commands** (macOS, read-only): `scan` (nearby Wi-Fi networks with channel crowding advice), `apps` (traffic by process via `nettop`), `lan` (devices on your subnet, by ping sweep plus the ARP table), `mtr HOST` (per-hop loss, latency and jitter over `count N` rounds), `lookup HOST [type MX]` (your resolver against 1.1.1.1, 8.8.8.8 and 9.9.9.9), `firewall` (application firewall and pf state) and `throughput HOST` (an iperf3 wrapper). `redact` masks SSIDs and MACs where they appear.
+- The Homebrew cask installs the zsh, bash and fish completion files on its own and removes them on uninstall.
+
 ## 0.4.1
 
 - Tab completion no longer offers option words after `diagnose to`; the next word is a host (bash, zsh, fish).
