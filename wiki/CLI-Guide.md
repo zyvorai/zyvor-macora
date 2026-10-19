@@ -29,9 +29,27 @@ macora routes | dns | wifi | services | neighbors | sockets | path | topology
 macora tui                     # full-screen workspace; / search, : palette, ? help
 ```
 
+## More diagnostics (0.5.0)
+
+```sh
+macora scan                    # nearby Wi-Fi networks, channel crowding, quieter-channel hint
+macora apps interval 3         # traffic by process
+macora lan                     # devices answering on your subnet (pings up to a /22)
+macora mtr 1.1.1.1 count 20    # per-hop loss, latency and jitter
+macora lookup github.com type MX   # your resolver vs 1.1.1.1, 8.8.8.8 and 9.9.9.9
+macora firewall                # application firewall and pf state (read-only)
+macora throughput HOST         # LAN speed to `iperf3 -s` on another machine (brew install iperf3)
+```
+
+`scan` needs Location Services to allow your terminal before macOS shows other networks. `lan` only pings addresses; run it on networks you manage. If macOS does not show the ARP table to the terminal, `lan` still lists devices that answer but leaves the MAC column empty.
+
+## Shell setup
+
+`eval "$(macora init zsh)"` in `~/.zshrc` turns on completion with descriptions and grey inline suggestions (`macora init bash`, `macora init fish | source` for the others). The Homebrew cask installs the completion files by itself.
+
 ## Words you can add
 
-`all` · `up` / `down` · `compact` · `ipv4` / `ipv6` · `raw` · `json` · `redact` · `html` / `md` / `prometheus` · `from FILE` · `interface NAME` · `group NAME` · `count N` · `interval SECONDS` · `timeout MS` · `theme NAME` · `color MODE` · `apply`
+`all` · `up` / `down` · `compact` · `ipv4` / `ipv6` · `raw` · `json` · `redact` · `html` / `md` / `prometheus` · `from FILE` · `interface NAME` · `group NAME` · `count N` · `interval SECONDS` · `timeout MS` · `theme NAME` · `color MODE` · `apply` · `type RECORD` (lookup)
 
 `macora help` lists them all; `man macora` has the full page.
 

@@ -11,7 +11,7 @@ Run on an Apple silicon Mac (macOS 27.x, Rust 1.98, Swift 6):
 - **Live, read-only:** `scripts/smoke-cli.sh` against the real network (all modes and formats, validation errors, redaction removes the router address in text/JSON/Markdown/HTML), and the app built and run live with `--autorun` to confirm it decodes the real CLI output.
 - **Measured, not assumed:** the path MTU the tool reports was compared with a manual `ping -D` bisection (1480 passes, 1492 fails); the Wi-Fi scan's effect on latency was measured (4 ms became 40-60 ms) and is why it runs last.
 
-## Release verification (v0.4.0 and 0.4.1)
+## Release verification (v0.4.0, 0.4.1 and 0.5.0)
 
 An independent pass, run against the **released** artifacts rather than the working tree. Everything is read-only; nothing changes a network setting.
 
@@ -29,7 +29,9 @@ An independent pass, run against the **released** artifacts rather than the work
 
 **0.4.1 artifacts.** Built, signed and notarized on a separate Mac; downloaded back and checked: SHA-256 files match, DMG and pkg stapled and accepted by `spctl`, app passes `codesign --verify --deep --strict`, reports 0.4.1 with the completion fix, and the tarball binary passes `verify-cli.py` 52/52.
 
-**Test-environment pitfalls.** (1) A `macora` earlier on `PATH` than Homebrew's (here, an old copy in `~/.local/bin`) is what `macora` runs, so test the installed path (`$(brew --prefix macora)/bin/macora`). (2) Running the app's `Contents/MacOS/Macora` with `--help` starts the GUI and does not return; use the bundled CLI in `Contents/Resources/macora` instead. (3) A Mac that sleeps drops off Wi-Fi and may return with a new address; confirm its SSH host key against the saved fingerprint before trusting the new address.
+**0.5.0 artifacts.** Built, signed and notarized on the mini; downloaded back from the GitHub release and checked: SHA-256 files match, DMG and pkg stapled and accepted by `spctl`, the app passes `codesign --verify --deep --strict` and reports 0.5.0, and the DMG's bundled CLI passes `verify-cli.py` 52/52. Fresh Homebrew installs on the mini: the formula installs and links completions; the cask installs, links `macora`, writes the zsh, bash and fish completion files in its `postflight` and removes them on uninstall (tested through a scratch tap before the real one was updated). `verify-cli.py` reports 51/52 on the mini only because its Wi-Fi interface is `en1` and the check assumes `en0`. The new commands (`scan`, `apps`, `lan`, `mtr`, `lookup`, `firewall`) were run live on the laptop; `throughput` was only exercised for its missing-iperf3 message. `scripts/verify-diagnose.py` had one flaky check (Wi-Fi signal compared against the first access point sharing the network's name in `system_profiler`); it now reads the connected network's own entry and passed 3 of 3 runs.
+
+**Test-environment pitfalls.** (0) `arp -an` printed nothing when started by another program (Python or a Rust `Command`) on the laptop while it worked from the shell, so `macora neighbors` showed an empty table there; `lan` lists hosts that answer ping even then, without MAC addresses. The cause was not identified. (1) A `macora` earlier on `PATH` than Homebrew's (here, an old copy in `~/.local/bin`) is what `macora` runs, so test the installed path (`$(brew --prefix macora)/bin/macora`). (2) Running the app's `Contents/MacOS/Macora` with `--help` starts the GUI and does not return; use the bundled CLI in `Contents/Resources/macora` instead. (3) A Mac that sleeps drops off Wi-Fi and may return with a new address; confirm its SSH host key against the saved fingerprint before trusting the new address.
 
 **Findings.** One bug: tab completion after `diagnose to` offered option words although the next word is a host. Fixed in 0.4.1 for bash, zsh and fish, with a test.
 
