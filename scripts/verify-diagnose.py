@@ -48,7 +48,14 @@ manual = next((s for s in range(1500, 1279, -1) if df(s)), None)
 mm = re.search(r"is (\d+) bytes", steps["MTU"]["detail"]); mt = int(mm.group(1)) if mm else 1500 if "full link size" in steps["MTU"]["detail"] else None
 check(f"path MTU equals a manual DF bisection ({mt} vs {manual})", mt is not None and manual is not None and abs(mt - manual) <= 2, steps["MTU"]["detail"])
 _, sp, _ = sh("/usr/sbin/system_profiler SPAirPortDataType -json", timeout=60)
-sn = re.search(r'"spairport_signal_noise" : "(-?\d+) dBm / (-?\d+) dBm"', sp)
+# The connected network's own reading: other access points that share its name appear later in the JSON.
+sn = None
+try:
+    for card in json.loads(sp)["SPAirPortDataType"][0]["spairport_airport_interfaces"]:
+        cur = (card.get("spairport_current_network_information") or {}).get("spairport_signal_noise")
+        sn = sn or (re.search(r"(-?\d+) dBm / (-?\d+) dBm", cur) if cur else None)
+except (ValueError, KeyError, IndexError):
+    pass
 wf = re.search(r"signal (-?\d+) dBm, noise (-?\d+) dBm", steps["Wi-Fi"]["detail"]) if "Wi-Fi" in steps else None
 check(f"Wi-Fi signal agrees with system_profiler ({wf.groups() if wf else None} vs {sn.groups() if sn else None})", bool(sn and wf) and abs(int(wf.group(1)) - int(sn.group(1))) <= 8)
 _, cap, _ = sh("/usr/bin/curl -s --max-time 5 http://captive.apple.com/hotspot-detect.html")
