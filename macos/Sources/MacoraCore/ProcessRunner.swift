@@ -1,5 +1,7 @@
 import Foundation
 
+private final class ErrorBuffer: @unchecked Sendable { var data = Data() }
+
 public enum ProcessRunner {
     public static func run(_ executable: String, _ arguments: [String], timeout: Double = 8, acceptedStatuses: Set<Int32> = [0]) async throws -> String {
         try await Task.detached(priority: .utility) {
@@ -11,18 +13,27 @@ public enum ProcessRunner {
             env["NO_COLOR"] = "1"
             process.environment = env
             process.standardInput = FileHandle.nullDevice
+            // Separate pipes: a trailing "macora: ..." line on stderr must never be appended to JSON on stdout.
             let pipe = Pipe()
+            let errPipe = Pipe()
             process.standardOutput = pipe
-            process.standardError = pipe
+            process.standardError = errPipe
             try process.run()
             let timer = DispatchWorkItem { if process.isRunning { process.terminate() } }
             DispatchQueue.global().asyncAfter(deadline: .now() + timeout, execute: timer)
             defer { timer.cancel() }
+            let errBox = ErrorBuffer()
+            let errDone = DispatchGroup()
+            errDone.enter()
+            DispatchQueue.global().async { errBox.data = errPipe.fileHandleForReading.readDataToEndOfFile(); errDone.leave() }
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            errDone.wait()
             process.waitUntilExit()
             let output = String(decoding: data, as: UTF8.self)
             guard acceptedStatuses.contains(process.terminationStatus) else {
-                throw MacoraError.message(output.isEmpty ? "Command failed or timed out: \(URL(fileURLWithPath: executable).lastPathComponent)" : output)
+                let errText = String(decoding: errBox.data, as: UTF8.self)
+                let detail = errText.isEmpty ? output : errText
+                throw MacoraError.message(detail.isEmpty ? "Command failed or timed out: \(URL(fileURLWithPath: executable).lastPathComponent)" : detail)
             }
             return output
         }.value
