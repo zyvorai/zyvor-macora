@@ -360,6 +360,37 @@ pub fn redact_aligned(mut text: String, s: &Snapshot) -> String {
     }
     redact(text, s)
 }
+/// Replaces `secret` in `text` only where it is a whole address, so `10.0.0.1` does not match inside
+/// `10.0.0.13` and `fe80::1` does not match inside `fe80::1a`.
+pub fn replace_addr(text: &str, secret: &str, mask: &str) -> String {
+    if secret.is_empty() {
+        return text.to_string();
+    }
+    let v6 = secret.contains(':');
+    let mut out = String::with_capacity(text.len());
+    let mut last = 0;
+    for (i, _) in text.match_indices(secret) {
+        let end = i + secret.len();
+        let before = text[..i].chars().next_back();
+        let mut after = text[end..].chars();
+        let next = after.next();
+        let joined_before = before.is_some_and(|c| c.is_ascii_alphanumeric() || c == ':');
+        let joined_after = match next {
+            Some(c) if c.is_ascii_alphanumeric() => true,
+            Some(':') => v6,
+            Some('.') => after.next().is_some_and(|c| c.is_ascii_digit()),
+            _ => false,
+        };
+        if i < last || joined_before || joined_after {
+            continue;
+        }
+        out.push_str(&text[last..i]);
+        out.push_str(mask);
+        last = end;
+    }
+    out.push_str(&text[last..]);
+    out
+}
 pub fn redact(mut text: String, s: &Snapshot) -> String {
     let mut secrets = Vec::new();
     for i in &s.interfaces {
@@ -380,7 +411,31 @@ pub fn redact(mut text: String, s: &Snapshot) -> String {
     secrets.sort_by_key(|(s, _)| std::cmp::Reverse(s.len()));
     secrets.dedup();
     for (secret, replacement) in secrets {
-        text = text.replace(&secret, replacement);
+        text = replace_addr(&text, &secret, replacement);
     }
     text
+}
+
+#[cfg(test)]
+mod tests {
+    use super::replace_addr;
+
+    #[test]
+    fn replace_addr_respects_address_boundaries() {
+        let m = "<IPv4>";
+        assert_eq!(
+            replace_addr("gw 10.0.0.1 up", "10.0.0.1", m),
+            "gw <IPv4> up"
+        );
+        assert_eq!(
+            replace_addr("10.0.0.13 10.0.0.1.", "10.0.0.1", m),
+            "10.0.0.13 <IPv4>."
+        );
+        assert_eq!(replace_addr("10.0.0.1:443", "10.0.0.1", m), "<IPv4>:443");
+        assert_eq!(replace_addr("110.0.0.1", "10.0.0.1", m), "110.0.0.1");
+        assert_eq!(
+            replace_addr("fe80::1a fe80::1%en0", "fe80::1", "<IPv6>"),
+            "fe80::1a <IPv6>%en0"
+        );
+    }
 }

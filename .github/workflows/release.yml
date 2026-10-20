@@ -64,7 +64,7 @@ jobs:
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
             # Never replace already-published (e.g. locally notarized) installers with unnotarized CI builds.
-            if [ "$HAVE_CERTS" != "true" ] && gh release view "$TAG" --json assets -q '.assets[].name' | grep -q '\.dmg$'; then
+            if { [ "$HAVE_CERTS" != "true" ] || [ "$HAVE_NOTARY" != "true" ]; } && gh release view "$TAG" --json assets -q '.assets[].name' | grep -q '\.dmg$'; then
               echo "Release $TAG already has installers; leaving them untouched."
             else
               gh release upload "$TAG" release/* --clobber
