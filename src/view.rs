@@ -4,13 +4,18 @@ use std::collections::BTreeMap;
 pub fn safe(s: &str) -> String {
     s.chars()
         .map(|c| {
-            if c.is_control() && c != '\n' {
+            if (c.is_control() && c != '\n') || is_invisible_format(c) {
                 '�'
             } else {
                 c
             }
         })
         .collect()
+}
+/// Bidi overrides/isolates and zero-width marks (category Cf) that can make a displayed value read
+/// differently from its real content.
+fn is_invisible_format(c: char) -> bool {
+    matches!(c, '\u{200B}'..='\u{200F}' | '\u{202A}'..='\u{202E}' | '\u{2060}'..='\u{2064}' | '\u{2066}'..='\u{2069}' | '\u{FEFF}')
 }
 pub struct Theme {
     pub color: bool,
@@ -418,7 +423,13 @@ pub fn redact(mut text: String, s: &Snapshot) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::replace_addr;
+    use super::{replace_addr, safe};
+
+    #[test]
+    fn safe_neutralizes_bidi_and_zero_width_characters() {
+        assert_eq!(safe("a\u{202E}b\u{200B}c\u{2066}d"), "a\u{FFFD}b\u{FFFD}c\u{FFFD}d");
+        assert_eq!(safe("plain\nünï"), "plain\nünï");
+    }
 
     #[test]
     fn replace_addr_respects_address_boundaries() {

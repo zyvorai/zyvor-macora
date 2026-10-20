@@ -8,7 +8,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 base="https://github.com/zyvorai/zyvor-macora/releases/download/v$version"
 sha() { curl -fsSL "$base/$1.sha256" | awk '{print $1}'; }
 tar_sha="$(sha "macora-$version-arm64-apple-darwin.tar.gz")"; dmg_sha="$(sha "Macora-$version.dmg")"
-[[ ${#tar_sha} -eq 64 && ${#dmg_sha} -eq 64 ]] || { echo "could not read checksums for v$version" >&2; exit 1; }
+[[ $tar_sha =~ ^[0-9a-f]{64}$ && $dmg_sha =~ ^[0-9a-f]{64}$ ]] || { echo "could not read checksums for v$version" >&2; exit 1; }
 mkdir -p "$tap/Formula" "$tap/Casks"
 # Formula: the version lives only in the url. Cask: in the version stanza.
 sed -E "/^  url /s/[0-9]+\.[0-9]+\.[0-9]+/$version/g; s/^(  sha256 )\".*\"/\1\"$tar_sha\"/" "$root/packaging/homebrew/Formula-macora.rb" > "$tap/Formula/macora.rb"

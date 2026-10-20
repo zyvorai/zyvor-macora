@@ -13,6 +13,8 @@ public struct CommandPlan: Identifiable, Equatable {
         !s.isEmpty && !s.hasPrefix("-") && !s.unicodeScalars.contains { CharacterSet.controlCharacters.contains($0) }
     }
     public static func isIP(_ s: String, family: Int32? = nil) -> Bool {
+        // inet_pton stops at the first NUL, so "1.1.1.1\0x" would pass while the full string is what gets quoted.
+        guard !s.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) else { return false }
         var v4 = in_addr(); var v6 = in6_addr()
         let a = s.withCString { inet_pton(AF_INET, $0, &v4) == 1 }
         let b = s.withCString { inet_pton(AF_INET6, $0, &v6) == 1 }

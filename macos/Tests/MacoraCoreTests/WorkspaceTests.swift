@@ -100,6 +100,14 @@ final class DiagnosisTests: XCTestCase {
         XCTAssertEqual(ok.trimmingCharacters(in: .whitespacesAndNewlines), "hi")
         do { _ = try await ProcessRunner.run("/bin/sh", ["-c", "exit 1"]); XCTFail("expected failure") } catch {}
     }
+    func testProcessRunnerKeepsStderrOutOfStdout() async throws {
+        let out = try await ProcessRunner.run("/bin/sh", ["-c", "echo '{}'; echo 'macora: step failed' >&2; exit 1"], acceptedStatuses: [0, 1])
+        XCTAssertEqual(out.trimmingCharacters(in: .whitespacesAndNewlines), "{}")
+    }
+    func testIsIPRejectsEmbeddedNul() {
+        XCTAssertTrue(CommandPlan.isIP("1.1.1.1"))
+        XCTAssertFalse(CommandPlan.isIP("1.1.1.1\u{0}; rm -rf /"))
+    }
     private let newJson = """
     {"steps":[{"step":"Link","status":"OK","detail":"en0 (Wi-Fi): 192.0.2.8","ms":null},{"step":"Route","status":"INFO","detail":"Default route uses en0.","ms":null},{"step":"Gateway","status":"WARN","detail":"192.0.2.1: 0% loss, 80 ms avg","ms":80.25},{"step":"MTU","status":"SKIP","detail":"Skipped in quick mode.","ms":null}],"verdict":"Connected, but with high latency to the router.","advice":["Restart the router."],"also":["Packets larger than 1480 bytes are dropped."],"target":"shop.example.test"}
     """
