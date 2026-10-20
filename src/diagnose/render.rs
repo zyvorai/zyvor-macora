@@ -158,7 +158,7 @@ pub fn html(r: &Report) -> String {
 pub fn redact(mut text: String, secrets: &[String]) -> String {
     for s in secrets {
         let mask = if s.contains(':') { "<IPv6>" } else { "<IPv4>" };
-        text = text.replace(s.as_str(), mask);
+        text = crate::view::replace_addr(&text, s, mask);
     }
     text
 }
