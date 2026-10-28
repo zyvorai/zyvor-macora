@@ -252,6 +252,10 @@ Run on an Apple silicon Mac (the 0.5.0 DMG and pkg were also signed, notarized, 
 
 Notarized CI releases (today they are notarized by hand) · per-process bandwidth (needs a privileged helper, not planned for the sandbox-free app) · Intel verification · more captured fixtures from other macOS versions (PRs welcome).
 
+## Support
+
+Free under Apache-2.0. If it helps you, you can donate any amount you like: <https://rzp.io/rzp/utwdYh3>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+
 ## License
 
 Copyright 2026 Zyvor AI Labs. Licensed under **Apache License 2.0**, including the Rust CLI and Swift application. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The design takes broad inspiration from Zyvor Vytrix's sidebar/card layout; this is new source code, not a fork, and shares no code or assets.
