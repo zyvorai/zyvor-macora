@@ -12,6 +12,8 @@
 
 ### Your Mac’s network, made clear.
 
+[Client overview (PDF)](docs/MACORA-Client-Overview.pdf)
+
 **A native SwiftUI workspace, a Rust CLI and an interactive terminal that explain what your network is doing, and why it feels slow.** Interfaces grouped and annotated, a one-click diagnosis, live traffic, scoped DNS and routes, and deliberate configuration controls. Built by Zyvor AI Labs.
 
 **Read-only by default** · **Zero dependencies** · **Native + CLI + TUI** · **Redact before you share** · **Local-first, no telemetry**
