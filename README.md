@@ -1,6 +1,18 @@
 <div align="center">
 
-# MACORA
+<img src="social/og.png" width="840" alt="Macora: your Mac's network, made clear. Native app window showing the Overview with demo data." />
+
+# Macora
+
+### Your Mac's network, made clear.
+
+A native SwiftUI app, a Rust CLI and a terminal workspace that explain what your network is doing, and why it feels slow. Read-only by default. Free and open source.
+
+<br />
+
+**[Download Macora 0.5.0](https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0)** &nbsp;·&nbsp; [Website](https://zyvorai.github.io/zyvor-macora/) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Client overview (PDF)](docs/MACORA-Client-Overview.pdf)
+
+`Macora-0.5.0.dmg` · macOS 14 or later · Apple silicon · Developer ID signed and notarized · Apache-2.0
 
 [![verify](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml/badge.svg)](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-0071e3)](LICENSE)
@@ -8,19 +20,11 @@
 [![Rust](https://img.shields.io/badge/rust-1.74%2B-orange)](Cargo.toml)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-63e6be)](Cargo.toml)
 
-![MACORA diagnosis wizard on simulated demo data](docs/ux/native-dark-diagnostics.png)
-
-### Your Mac’s network, made clear.
-
-[Client overview (PDF)](docs/MACORA-Client-Overview.pdf)
-
-**A native SwiftUI workspace, a Rust CLI and an interactive terminal that explain what your network is doing, and why it feels slow.** Interfaces grouped and annotated, a one-click diagnosis, live traffic, scoped DNS and routes, and deliberate configuration controls. Built by Zyvor AI Labs.
-
 **Read-only by default** · **Zero dependencies** · **Native + CLI + TUI** · **Redact before you share** · **Local-first, no telemetry**
 
-🌐 **[Site](https://zyvorai.github.io/zyvor-macora/)** · 🚀 **[Quickstart](#quickstart)** · 🩺 **[Diagnose](#why-is-my-network-slow)** · 🔒 **[Security](SECURITY.md)** · 📖 **[Docs](#documentation-map)** · 🤝 **[Contributing](CONTRIBUTING.md)**
-
 </div>
+
+---
 
 ## Why MACORA
 
@@ -76,7 +80,7 @@ macora tui                                # full-screen workspace
 open dist/Macora.app                      # or add --args --demo for simulated data
 ```
 
-Download `Macora-0.5.0.dmg` (drag to Applications) or `Macora-0.5.0.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#install). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. With Homebrew (the tap installs the notarized app, or just the CLI):
+Download `Macora-0.5.0.dmg` (drag to Applications) or `Macora-0.5.0.pkg` from the [Releases page](https://github.com/zyvorai/zyvor-macora/releases), or the [site](https://zyvorai.github.io/zyvor-macora/#start). Both are signed with Zyvor AI Labs' Developer ID and **notarized by Apple** (Apple silicon, macOS 14+), so they open without a Gatekeeper warning; each has a `.sha256`. The CLI tarball is signed but not notarized. Builds from the [release workflow](.github/workflows/release.yml) are notarized only when the Apple secrets are configured in the repository. With Homebrew (the tap installs the notarized app, or just the CLI):
 
 ```sh
 brew install --cask zyvorai/tap/macora   # MACORA.app and `macora` on your PATH
