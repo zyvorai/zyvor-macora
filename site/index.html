@@ -2,83 +2,113 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MACORA — your Mac's network, made clear</title>
-<meta name="description" content="A native SwiftUI workspace, Rust CLI and interactive terminal that explain your Mac's network. Read-only by default, zero dependencies, Apache 2.0.">
-<style>
-:root{--bg:#fff;--fg:#1d1d1f;--mut:#6e6e73;--card:#f5f5f7;--line:#d2d2d7;--acc:#0071e3}
-@media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#f5f5f7;--mut:#a1a1a6;--card:#1c1c1e;--line:#38383a;--acc:#2997ff}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
-a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
-.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
-nav{display:flex;gap:20px;align-items:center;padding:18px 0;font-size:15px}
-nav b{margin-right:auto;letter-spacing:.14em}
-.hero{text-align:center;padding:56px 0 32px}
-.eyebrow{color:var(--acc);font-weight:700;letter-spacing:.18em;font-size:13px}
-h1{font-size:clamp(36px,7vw,64px);line-height:1.05;margin:14px 0}
-.lead{color:var(--mut);max-width:640px;margin:0 auto 26px;font-size:20px}
-.btn{display:inline-block;background:var(--acc);color:#fff;padding:12px 24px;border-radius:999px;font-weight:600}
-.btn:hover{text-decoration:none;opacity:.9}
-.shot{width:100%;border-radius:14px;border:1px solid var(--line);margin-top:36px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:48px 0}
-.card{background:var(--card);border-radius:18px;padding:22px}
-.card h3{margin:0 0 6px;font-size:18px}.card p{margin:0;color:var(--mut);font-size:15px}
-pre{background:var(--card);border-radius:14px;padding:18px;overflow:auto;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
-h2{font-size:30px;margin:56px 0 12px}
-.sub{color:var(--mut);font-size:15px}.hash{margin-top:8px;font-size:13px}ol{padding-left:22px}li{margin:6px 0}code{font:14px ui-monospace,SFMono-Regular,Menlo,monospace}
-footer{color:var(--mut);font-size:14px;padding:40px 0;border-top:1px solid var(--line);margin-top:56px}
-@media(prefers-reduced-motion:no-preference){.card{transition:transform .2s}.card:hover{transform:translateY(-2px)}}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Macora · Your Mac&#x27;s network, made clear.</title>
+<meta name="description" content="Macora is an open-source network workspace for macOS 14 or later: a native SwiftUI app, a Rust CLI and a terminal UI that diagnose why your network is slow. Read-only by default, zero dependencies, Apache-2.0.">
+<link rel="canonical" href="https://zyvorai.github.io/zyvor-macora/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Macora">
+<meta property="og:title" content="Macora · Your Mac&#x27;s network, made clear.">
+<meta property="og:description" content="Open-source network diagnosis for macOS 14 or later: native app, CLI and TUI. Read-only by default. Apache-2.0.">
+<meta property="og:url" content="https://zyvorai.github.io/zyvor-macora/">
+<meta property="og:image" content="https://zyvorai.github.io/zyvor-macora/social/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Macora: your Mac&#x27;s network, made clear. The app window shows the Overview with demo data.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Macora · Your Mac&#x27;s network, made clear.">
+<meta name="twitter:description" content="Open-source network diagnosis for macOS 14 or later: native app, CLI and TUI. Read-only by default. Apache-2.0.">
+<meta name="twitter:image" content="https://zyvorai.github.io/zyvor-macora/social/og.png">
+<meta name="twitter:image:alt" content="Macora: your Mac&#x27;s network, made clear. The app window shows the Overview with demo data.">
+<link rel="stylesheet" href="assets/landing.css">
+<style>:root{--accent-btn:#0071e3;--accent-ink:#0071e3;--accent-grad-a:#0071e3;--accent-grad-b:#5ac8fa}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent-ink:#2997ff}}:root[data-theme="dark"]{--accent-ink:#2997ff}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Macora","applicationCategory":"DeveloperApplication","operatingSystem":"macOS","softwareVersion":"0.5.0","downloadUrl":"https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0","url":"https://zyvorai.github.io/zyvor-macora/","description":"Macora is an open-source network workspace for macOS 14 or later: a native SwiftUI app, a Rust CLI and a terminal UI that diagnose why your network is slow. Read-only by default, zero dependencies, Apache-2.0.","image":"https://zyvorai.github.io/zyvor-macora/social/og.png","publisher":{"@type":"Organization","name":"Zyvor AI Labs Private Limited","url":"https://zyvor.dev"}}</script>
 </head>
 <body>
-<div class="wrap">
-<nav><b>MACORA</b><a href="#install">Install</a><a href="https://github.com/zyvorai/zyvor-macora">GitHub</a><a href="https://github.com/zyvorai/zyvor-macora/blob/main/SECURITY.md">Security</a></nav>
-<section class="hero">
-<div class="eyebrow">BY ZYVOR AI LABS</div>
-<h1>Your Mac’s network,<br>made clear.</h1>
-<p class="lead">A native SwiftUI workspace, a Rust CLI and an interactive terminal that explain what your network is doing, and why it feels slow. Read-only by default. No dependencies. No telemetry.</p>
-<a class="btn" href="#install">Download for Mac</a>
-<picture>
-<source media="(prefers-color-scheme: dark)" srcset="docs/ux/native-dark-diagnostics.png">
-<img class="shot" src="docs/ux/native-light-diagnostics.png" alt="MACORA diagnosis wizard walking link, gateway, internet, DNS and MTU, shown on simulated demo data">
-</picture>
-<p style="color:var(--mut);font-size:14px">Simulated demo data. Not a screenshot of a real network.</p>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a class="brand" href="./" aria-label="Macora home"><img src="favicon.svg" width="26" height="26" alt=""><span>Macora</span></a>
+  <nav aria-label="Primary"><ul><li><a href="#features">Features</a></li><li><a href="#specs">Specs</a></li><li><a href="#start">Get started</a></li><li><a href="#support">Support</a></li><li><a href="#faq">FAQ</a></li><li><a href="https://github.com/zyvorai/zyvor-macora/tree/main/docs">Docs</a></li></ul></nav>
+  <a class="btn small primary" href="https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0">Download</a>
+</header>
+<main id="main">
+<section class="hero" aria-labelledby="top">
+  <img class="icon" src="favicon.svg" width="96" height="96" alt="Macora app icon">
+  <p class="eyebrow">Zyvor · network diagnosis</p>
+  <h1 id="top">Macora</h1>
+  <p class="tagline">Your Mac&#x27;s network, made clear.</p>
+  <p class="promise"><strong>A native app, a CLI and a terminal workspace.</strong> Macora explains what your network is doing and why it feels slow: interfaces grouped and annotated, a one-click diagnosis from link to HTTPS, live traffic, scoped DNS and routes. Read-only by default. Open source under Apache-2.0.</p>
+  <p class="cta"><a class="btn primary" href="https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0">Download Macora 0.5.0</a><a class="textlink" href="#features">Learn more</a></p>
+  <p class="fine">macOS 14 or later · Apple silicon · notarized · Free and open source (Apache-2.0)</p>
+  <figure class="shot hero-shot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/img/hero-overview-dark-1200.webp 1200w" sizes="(min-width:1080px) 1040px, 100vw"><img src="assets/img/hero-overview-light-1200.webp" srcset="assets/img/hero-overview-light-1200.webp 1200w" sizes="(min-width:1080px) 1040px, 100vw" width="1600" height="1000" alt="Macora Overview: a welcome card with three places to start, and a connection stack of adapters, wireless, control and evidence, in a native macOS window with a sidebar." fetchpriority="high" decoding="async"></picture><figcaption>The Overview. Demo data, not a real network.</figcaption></figure>
 </section>
-<div class="grid">
-<div class="card"><h3>Why is it slow?</h3><p>One check walks link → router → internet → sign-in page → DNS → HTTPS → path MTU, plus Wi-Fi quality and IPv6. It names the lowest layer that is really wrong and tells you what to try.</p></div>
-<div class="card"><h3>Explained, not dumped</h3><p>Interfaces grouped and annotated: scoped IPv6, temporary addresses, bridges, tunnels, flags.</p></div>
-<div class="card"><h3>Native and terminal</h3><p>SwiftUI app with a menu-bar panel, plus <code>macora</code>, an interactive REPL and a full-screen TUI.</p></div>
-<div class="card"><h3>Share safely</h3><p>Redact IPs and MACs, export Markdown, HTML or Prometheus text. Snapshots are private by default.</p></div>
-<div class="card"><h3>Read-only</h3><p>Nothing changes your settings without a preview and an explicit confirmation.</p></div>
-<div class="card"><h3>Zero dependencies</h3><p>No external Rust crates or Swift packages. Apache 2.0.</p></div>
+
+<section class="band" aria-label="Overview">
+  <h2>Why is my network slow? Ask it.</h2>
+  <p>Macora walks your connection layer by layer, names the lowest layer that is really wrong and tells you what to try. It reads. It changes nothing without a preview and your say-so.</p>
+</section>
+
+<div id="features">
+<h2 class="sr">Features</h2>
+<section class="feature" id="diagnostics" aria-labelledby="h-diagnostics"><div class="grid"><div class="copy"><p class="eyebrow">Diagnosis</p><h3 id="h-diagnostics">The lowest layer that is really wrong.</h3><p>Link, router, internet, sign-in page, DNS, HTTPS, path MTU, Wi-Fi and IPv6, checked bottom-up. It sends a few packets and DNS lookups only when you press the button.</p><a class="textlink" href="https://github.com/zyvorai/zyvor-macora/blob/main/docs/DIAGNOSE.md">How diagnose works</a></div><figure class="shot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/img/diagnostics-dark-1200.webp 1200w" sizes="(min-width:960px) 62vw, 100vw"><img src="assets/img/diagnostics-light-1200.webp" srcset="assets/img/diagnostics-light-1200.webp 1200w" sizes="(min-width:960px) 62vw, 100vw" width="1600" height="1000" alt="Macora Diagnostics: a Why is my network slow checklist with Link, Wi-Fi, Gateway, Internet and HTTPS passed and DNS marked needs attention, each with its simulated reading." loading="lazy" decoding="async"></picture><figcaption>Diagnostics. Demo data.</figcaption></figure></div></section>
+<section class="feature flip" id="interfaces" aria-labelledby="h-interfaces"><div class="grid"><div class="copy"><p class="eyebrow">Interfaces</p><h3 id="h-interfaces">Interfaces, grouped and explained.</h3><p>Network, Bridges, Tunnels, System and Loopback, with each flag, scoped IPv6 address and bridge member explained in plain words, plus live traffic. A counter that is missing stays unavailable rather than being invented.</p></div><figure class="shot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/img/interfaces-dark-1200.webp 1200w" sizes="(min-width:960px) 62vw, 100vw"><img src="assets/img/interfaces-light-1200.webp" srcset="assets/img/interfaces-light-1200.webp 1200w" sizes="(min-width:960px) 62vw, 100vw" width="1600" height="1000" alt="Macora Interface explorer: cards for Wi-Fi with a traffic sparkline, two Thunderbolt adapters and a network bridge, grouped under Network and Bridges." loading="lazy" decoding="async"></picture><figcaption>Interfaces. Demo data.</figcaption></figure></div></section>
+<section class="feature" id="cli" aria-labelledby="h-cli"><div class="grid"><div class="copy"><p class="eyebrow">Command line</p><h3 id="h-cli">The same diagnosis, in your terminal.</h3><p>macora diagnose prints the same walk with a verdict and what to try. Add quick for about two seconds, to github.com for one site, or redact md for a shareable report.</p><a class="textlink" href="https://github.com/zyvorai/zyvor-macora#cli-cookbook">CLI cookbook</a></div><figure class="shot"><picture><img src="assets/img/cli-light-1200.webp" srcset="assets/img/cli-light-1200.webp 1200w" sizes="(min-width:960px) 62vw, 100vw" width="1640" height="479" alt="Terminal running macora diagnose redact: Link, Route, Wi-Fi, Gateway, Internet, Portal, DNS, HTTPS, MTU and IPv6 lines, a verdict about a 1480-byte path MTU and two things to try." loading="lazy" decoding="async"></picture><figcaption>Real output from a Mac, addresses masked with redact.</figcaption></figure></div></section>
+<section class="feature flip" id="redact" aria-labelledby="h-redact"><div class="grid"><div class="copy"><p class="eyebrow">Share safely</p><h3 id="h-redact">Redact before you share.</h3><p>Redaction masks IP and MAC addresses in exports. Reports come as Markdown, HTML or JSON, and snapshots are private and never overwritten.</p></div><figure class="shot"><picture><img src="assets/img/redact-light-1200.webp" srcset="assets/img/redact-light-1200.webp 1200w" sizes="(min-width:960px) 62vw, 100vw" width="1640" height="983" alt="Terminal running macora redact group Network: connected adapters first, each interface explained in plain words with masked addresses." loading="lazy" decoding="async"></picture><figcaption>macora redact group Network, as real output.</figcaption></figure></div></section>
 </div>
-<h2>In the terminal</h2>
-<p class="sub">It works like <code>ifconfig</code>, with plain words: <code>macora en0</code>, <code>macora list up</code>, <code>macora diagnose</code>. Output below is real, with addresses masked by <code>redact</code>.</p>
-<img class="shot" src="docs/ux/cli-diagnose.png" alt="macora diagnose redact in a terminal: link, route, Wi-Fi, router, internet, DNS, HTTPS, path MTU and IPv6 checks with a verdict">
-<h2 id="install">Download and install</h2>
-<p class="sub">Version 0.5.0 · macOS 14 or newer · Apple silicon · signed by Zyvor AI Labs and <b>notarized by Apple</b>, so it opens without a Gatekeeper warning.</p>
-<div class="grid">
-<div class="card"><h3>Disk image (.dmg)</h3><p>Open it and drag MACORA into Applications. Best for most people.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/Macora-0.5.0.dmg">Download .dmg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/Macora-0.5.0.dmg.sha256">SHA-256</a></p></div>
-<div class="card"><h3>Installer (.pkg)</h3><p>Double-click to install into Applications. Handy for managed Macs and scripts.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/Macora-0.5.0.pkg">Download .pkg</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/Macora-0.5.0.pkg.sha256">SHA-256</a></p></div>
-<div class="card"><h3>Command line only</h3><p>The <code>macora</code> CLI with man page and shell completions.</p><p style="margin-top:14px"><a class="btn" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/macora-0.5.0-arm64-apple-darwin.tar.gz">Download .tar.gz</a></p><p class="hash"><a href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/macora-0.5.0-arm64-apple-darwin.tar.gz.sha256">SHA-256</a></p></div>
-</div>
-<h3>Install steps</h3>
-<ol>
-<li>Download the <code>.dmg</code> and open it.</li>
-<li>Drag <b>MACORA</b> onto <b>Applications</b>, then open it from Launchpad or Spotlight.</li>
-<li>Choose <b>Open</b> if macOS asks to confirm an app downloaded from the internet. It is notarized, so there is no “unidentified developer” block.</li>
-<li>To look around without touching your network, start it with simulated data: <code>open -a MACORA --args --demo</code>.</li>
-</ol>
-<p class="sub">With Homebrew: <code>brew install --cask zyvorai/tap/macora</code> (the app and the <code>macora</code> command) or <code>brew install zyvorai/tap/macora</code> (command line only). If Homebrew says the tap is not trusted, run <code>brew trust --cask zyvorai/tap/macora</code> (or <code>--formula</code> for the CLI) and install again.</p>
-<p class="sub">Verify a download: <code>shasum -a 256 -c Macora-0.5.0.dmg.sha256</code>. Uninstall: drag MACORA from Applications to the Trash. It runs no background service and leaves nothing else behind except its preferences. The CLI tarball is signed but not notarized, so if macOS blocks <code>macora</code> after download, run <code>xattr -d com.apple.quarantine macora</code> once.</p>
-<h2>Build from source</h2>
-<pre>git clone https://github.com/zyvorai/zyvor-macora.git &amp;&amp; cd zyvor-macora
-./scripts/install-macos.sh ~/.local   # CLI, man page, completions
-macora diagnose
-macora tui
-./scripts/build-macos.sh &amp;&amp; open dist/Macora.app</pre>
-<footer>Copyright 2026 Zyvor AI Labs · Apache License 2.0 · macOS 14+ · Not affiliated with Apple.</footer>
-</div>
+
+<section class="more" aria-labelledby="more-h">
+  <h2 id="more-h">More than a diagnosis.</h2>
+  <div class="cards"><div class="card"><h3>Baselines and diff</h3><p>Capture a baseline, then compare field by field in the app or with <code>macora diff</code>.</p></div><div class="card"><h3>Scripts and dashboards</h3><p><code>watch prometheus</code>, NDJSON frames, <code>json</code> on every command and shell completions.</p></div><div class="card"><h3>Terminal workspace</h3><p><code>macora tui</code> is a full-screen workspace; <code>macora interactive</code> is a persistent command session.</p></div><div class="card"><h3>Menu bar and Shortcuts</h3><p>A menu bar panel with live rates and a Why slow? shortcut, plus Shortcuts actions for network status and the diagnosis.</p></div></div>
+</section>
+
+<section class="privacy" aria-labelledby="privacy-h">
+  <h2 id="privacy-h">Safe to run on a machine you care about.</h2>
+  <div class="cards"><div class="card"><h3>Read-only by default</h3><p>Nothing changes without a preview and an explicit apply or authorization dialog.</p></div><div class="card"><h3>Local-first</h3><p>No telemetry. Snapshots stay on your Mac, with private file permissions.</p></div><div class="card"><h3>Zero dependencies</h3><p>No external Rust crates and no external Swift packages. Apple system frameworks only.</p></div></div>
+</section>
+
+<section class="specs" id="specs" aria-labelledby="specs-h">
+  <h2 id="specs-h">Specs and requirements.</h2>
+  <dl class="specs-grid"><div class="spec"><dt>Requires</dt><dd>macOS 14 or later<small>The downloadable app is built for Apple silicon. Intel Macs are not verified.</small></dd></div><div class="spec"><dt>Build</dt><dd>Signed and notarized<small>The 0.5.0 DMG and pkg are Developer ID signed and notarized by Apple. The CLI tarball is not notarized.</small></dd></div><div class="spec"><dt>Version</dt><dd>0.5.0<small>Release assets carry a .sha256 file.</small></dd></div><div class="spec"><dt>Licence</dt><dd>Apache-2.0<small>Rust CLI and Swift app. Free to use.</small></dd></div><div class="spec"><dt>Mode</dt><dd>Read-only by default<small>Configuration changes need a preview and authorization.</small></dd></div><div class="spec"><dt>Install</dt><dd>DMG, pkg or Homebrew<small>brew install --cask zyvorai/tap/macora</small></dd></div></dl>
+  <div class="limit" role="note"><h3>Honest limits</h3><p>Not yet run: <b>Intel Macs, administrator-authorized configuration changes, Wi-Fi join and disconnect, and the Location-permission flows.</b> There is no automatic rollback of a configuration change. Per-process bandwidth is not planned for the sandbox-free app. Custom VPN providers, enterprise certificate workflows, firewall engines and Internet Sharing stay in System Settings.</p></div>
+</section>
+
+<section class="steps" id="start" aria-labelledby="steps-h">
+  <h2 id="steps-h">Get started in three steps.</h2>
+  <ol><li><h3>Download</h3><p>Get <code>Macora-0.5.0.dmg</code> from the release page, or run <code>brew install --cask zyvorai/tap/macora</code>.</p></li><li><h3>Install</h3><p>Open the DMG and drag Macora to Applications. It requires <b>macOS 14 or later</b> on Apple silicon.</p></li><li><h3>Ask the question</h3><p>Open Diagnostics and press Run, or run <code>macora diagnose</code> in a terminal.</p></li></ol>
+  <div class="sha"><p>Macora 0.5.0 for Mac · SHA-256</p><pre><code id="sha">205a7cca51ec9de4ad3278becec4928d9a75482c0562c1e44c35c24828762c9a</code></pre><p>Verify: <code>echo "205a7cca51ec9de4ad3278becec4928d9a75482c0562c1e44c35c24828762c9a Macora-0.5.0.dmg" | shasum -a 256 -c</code></p></div>
+  <p class="cta"><a class="btn primary" href="https://github.com/zyvorai/zyvor-macora/releases/download/v0.5.0/Macora-0.5.0.dmg">Download Macora-0.5.0.dmg</a><a class="textlink" href="https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0">Release page</a><a class="textlink" href="https://github.com/zyvorai/zyvor-macora#quickstart">Install guide</a></p>
+</section>
+
+<section class="pricing" id="support" aria-labelledby="pricing-h">
+  <div class="inner">
+  <h2 id="pricing-h" style="text-align:left">Free. Pay what you like.</h2>
+  <p class="lead">Free under Apache-2.0. If it helps you, you can pay any amount you like, from ₹1 up. Suggested: ₹999 (about $10), ₹2,999 (about $30) or <b>₹9,999 (about $100)</b>, by UPI, card or netbanking. Razorpay accepts international cards; Cashfree is for India.</p>
+<p class="cta"><a class="btn primary" href="https://rzp.io/rzp/utwdYh3" rel="noopener">Pay what you like (Razorpay)</a><a class="btn ghost" href="https://payments.cashfree.com/forms/zyvor-donate" rel="noopener">Cashfree (India)</a></p>
+<p class="fine">A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license. Support contracts are separate: <a href="mailto:sales@zyvor.dev">sales@zyvor.dev</a>.</p>
+  </div>
+</section>
+
+<section class="faq" id="faq" aria-labelledby="faq-h">
+  <h2 id="faq-h">Questions, answered.</h2>
+  <details><summary>Is Macora free?</summary><p>Yes. It is open source under Apache-2.0. You can also pay any amount you like, from ₹1 up, but nothing is required and a payment buys no licence, features or support.</p></details>
+<details><summary>Does it change my network settings?</summary><p>Not by itself. It is read-only by default. A change needs a preview of the exact command and consequence, then an explicit apply or the macOS authorization dialog. There is no automatic rollback.</p></details>
+<details><summary>Will macOS warn me when I open it?</summary><p>No for the DMG and pkg: they are Developer ID signed and notarized by Apple. The CLI tarball is not notarized. Each download has a .sha256 file.</p></details>
+<details><summary>Which Macs and macOS versions?</summary><p>macOS 14 or later. The downloadable app is built for Apple silicon; Intel Macs are not verified.</p></details>
+<details><summary>What does the diagnosis send?</summary><p>Only when you run it, a few packets and DNS lookups to check each layer. Macora has no telemetry.</p></details>
+<details><summary>Are the screenshots a real network?</summary><p>The app screenshots run Macora's built-in simulated demo data and are labelled Demo data. The terminal screenshots are real output with addresses masked.</p></details>
+</section>
+</main>
+<footer class="footer">
+  <p><strong>Macora</strong> · Macora is open source under the Apache License 2.0.</p>
+  <p class="links"><a href="https://github.com/zyvorai/zyvor-macora/tree/main/docs">Docs</a><a href="https://github.com/zyvorai/zyvor-macora/blob/main/CHANGELOG.md">Changelog</a><a href="https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0">Release</a><a href="https://github.com/zyvorai/zyvor-macora">GitHub</a><a href="https://github.com/zyvorai/zyvor-macora/blob/main/LICENSE">LICENSE</a><a href="https://github.com/zyvorai/zyvor-macora/blob/main/SECURITY.md">SECURITY</a><a href="mailto:sales@zyvor.dev">sales@zyvor.dev</a></p>
+  <p>© 2026 Zyvor AI Labs Private Limited · <a href="https://zyvor.dev">zyvor.dev</a> · Apache-2.0</p>
+</footer>
 </body>
 </html>
