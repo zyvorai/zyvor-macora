@@ -7,7 +7,7 @@ The source references were inspected through GitHub:
 - Nuvora's public design contract, `docs/design/APPLE-UX-CONTRACT.md`, and light/dark overview screenshots at repository tree `7451dca9a43c2d603fbd63d279b716271fa8131e`: https://github.com/zyvorai/zyvor-nuvora
 - GuestKit's interactive-mode guide and TUI command-palette flow at repository tree `0a5c429241427ea31b06ef6c7d75e897b3705143`: https://github.com/zyvorai/zyvor-guestkit
 
-These references guide layout and interaction; no Nuvora stylesheet, component, screenshot or other source asset is distributed here. MACORA's implementation and original icon remain Apache 2.0. The native overview previews are newly rendered design illustrations, not captures of a running SwiftUI app. The terminal image renders actual Rust TUI output against the sanitized fixture.
+These references guide layout and interaction; no Nuvora stylesheet, component, screenshot or other source asset is distributed here. MACORA's implementation and original icon remain under the Zyvor Production License v1.0. The native overview previews are newly rendered design illustrations, not captures of a running SwiftUI app. The terminal image renders actual Rust TUI output against the sanitized fixture.
 
 Cmd-K opens a fuzzy command palette. The 17 catalog actions cover page navigation, configuration, baseline capture, export and preferences. Keyboard arrows choose a result; Return opens it. The main inspector remains a native SwiftUI sidebar workspace.
 

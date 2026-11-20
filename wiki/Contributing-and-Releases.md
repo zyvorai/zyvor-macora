@@ -2,7 +2,7 @@
 
 ## Principles
 
-Read-only by default; zero external dependencies; honest output (never invent data); preserve the JSON schema; Apache 2.0.
+Read-only by default; zero external dependencies; honest output (never invent data); preserve the JSON schema; Zyvor Production License v1.0.
 
 ## Before a pull request
 

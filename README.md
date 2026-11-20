@@ -6,16 +6,16 @@
 
 ### Your Mac's network, made clear.
 
-A native SwiftUI app, a Rust CLI and a terminal workspace that explain what your network is doing, and why it feels slow. Read-only by default. Free and open source.
+A native SwiftUI app, a Rust CLI and a terminal workspace that explain what your network is doing, and why it feels slow. Read-only by default. Source-available: free for non-production use under the Zyvor Production License v1.0.
 
 <br />
 
 **[Download Macora 0.5.0](https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0)** &nbsp;·&nbsp; [Website](https://zyvorai.github.io/zyvor-macora/) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Client overview (PDF)](docs/MACORA-Client-Overview.pdf)
 
-`Macora-0.5.0.dmg` · macOS 14 or later · Apple silicon · Developer ID signed and notarized · Apache-2.0
+`Macora-0.5.0.dmg` · macOS 14 or later · Apple silicon · Developer ID signed and notarized · Zyvor Production License
 
 [![verify](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml/badge.svg)](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/license-Apache--2.0-0071e3)](LICENSE)
+[![License](https://img.shields.io/badge/license-Zyvor%20Production%201.0-0071e3)](LICENSE)
 [![macOS](https://img.shields.io/badge/macOS-14%2B-2997ff)](docs/TESTING.md)
 [![Rust](https://img.shields.io/badge/rust-1.74%2B-orange)](Cargo.toml)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-63e6be)](Cargo.toml)
@@ -260,8 +260,11 @@ Notarized CI releases (today they are notarized by hand) · per-process bandwidt
 
 ## Support
 
-Free under Apache-2.0. If it helps you, you can pay any amount you like, from INR 1 up. Suggested: INR 999 (about US$10), INR 2,999 (about US$30) or **INR 9,999 (about US$100)**: by UPI, card or netbanking at <https://rzp.io/rzp/utwdYh3> (Razorpay; international cards work too). A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+Non-production use is free under the Zyvor Production License v1.0; production use requires a commercial license (sales@zyvor.dev). If it helps you, you can pay any amount you like, from INR 1 up. Suggested: INR 999 (about US$10), INR 2,999 (about US$30) or **INR 9,999 (about US$100)**: by UPI, card or netbanking at <https://rzp.io/rzp/utwdYh3> (Razorpay; international cards work too). A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 ## License
 
-Copyright 2026 Zyvor AI Labs. Licensed under **Apache License 2.0**, including the Rust CLI and Swift application. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The design takes broad inspiration from Zyvor Vytrix's sidebar/card layout; this is new source code, not a fork, and shares no code or assets.
+Copyright 2026 Zyvor AI Labs. Licensed under the **[Zyvor Production License v1.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-1.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-1.0.txt)), including the Rust CLI and Swift application. See [NOTICE](NOTICE).
+
+- **Free** for evaluation, development, testing, research, education and all other non-production use.
+- **Production use needs a commercial license** from Zyvor AI Labs Private Limited; a 30-day trial key is available for production evaluation. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). The design takes broad inspiration from Zyvor Vytrix's sidebar/card layout; this is new source code, not a fork, and shares no code or assets.

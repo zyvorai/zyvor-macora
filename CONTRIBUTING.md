@@ -8,7 +8,7 @@ Thanks for helping make MACORA better. Bug reports, fixtures from other macOS ve
 - **Zero dependencies.** No external Rust crates or Swift packages. Apple system frameworks are fine.
 - **Honest output.** Never invent data (missing counters stay "unavailable"), never claim VPN ownership or internet health from interface state alone.
 - Preserve the JSON schema or add an explicit version migration. Use public macOS APIs and fixed executable paths with argument arrays, never a shell string.
-- Code is contributed under Apache 2.0. Do not copy code from BUSL or other incompatible sources.
+- Code is contributed under the Zyvor Production License v1.0. Do not copy code from BUSL or other incompatible sources.
 
 ## Set up
 

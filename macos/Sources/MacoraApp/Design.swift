@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Fresh native tokens inspired by Nuvora's public visual contract.
-/// No Nuvora source, stylesheet or assets are embedded in this Apache project.
+/// No Nuvora source, stylesheet or assets are embedded in this project.
 enum MacoraDesign {
     static let blue = Color(red: 0, green: 0.443, blue: 0.89)
     static func page(_ scheme: ColorScheme) -> Color { scheme == .dark ? .black : .white }
