@@ -4,7 +4,7 @@ MACORA 0.2 follows a three-level composition: the overview introduces the networ
 
 The source references were inspected through GitHub:
 
-- Nuvora's public design contract, `docs/design/APPLE-UX-CONTRACT.md`, and light/dark overview screenshots at repository tree `7451dca9a43c2d603fbd63d279b716271fa8131e`: https://github.com/zyvorai/zyvor-nuvora
+- Nuvora's public design contract, `docs/design/APPLE-UX-CONTRACT.md`, and light/dark overview screenshots at repository tree `7451dca9a43c2d603fbd63d279b716271fa8131e`: (source is private; request access at sales@zyvor.dev)
 - GuestKit's interactive-mode guide and TUI command-palette flow at repository tree `0a5c429241427ea31b06ef6c7d75e897b3705143`: https://github.com/zyvorai/zyvor-guestkit
 
 These references guide layout and interaction; no Nuvora stylesheet, component, screenshot or other source asset is distributed here. MACORA's implementation and original icon remain under the Zyvor Production License v1.0. The native overview previews are newly rendered design illustrations, not captures of a running SwiftUI app. The terminal image renders actual Rust TUI output against the sanitized fixture.

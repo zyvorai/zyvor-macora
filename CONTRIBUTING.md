@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make MACORA better. Bug reports, fixtures from other macOS versions, and focused pull requests are all welcome.
+Thanks for helping make MACORA better. Bug reports, fixtures from other macOS versions, and focused pull requests are welcome. MACORA is source-available under the Zyvor Production License v1.0, not open source; email sales@zyvor.dev before a large change.
 
 ## Principles
 
