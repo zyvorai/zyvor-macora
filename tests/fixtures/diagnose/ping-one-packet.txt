@@ -1,0 +1,3 @@
+--- 192.0.2.1 ping statistics ---
+1 packets transmitted, 1 packets received, 0.0% packet loss
+round-trip min/avg/max/std-dev = 11.868/11.868/11.868/nan ms

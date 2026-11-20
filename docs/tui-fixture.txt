@@ -1,0 +1,30 @@
+MACORA  /  Interfaces  /  OFFLINE
+1 Overview   2 Interfaces   3 Detail   4 Topology   5 Diagnostics   6 Changes
+17 interfaces · 17 visible · filter "" · sort active · unmasked
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  INTERFACE    GROUP        STATE        MTU     LABEL
+>  awdl0        System       ACTIVE       1500    Apple peer-to-peer
+   en0          Network      ACTIVE       1500    Network adapter
+   llw0         System       ACTIVE       1500    Apple low-latency peer link
+   lo0          Loopback     ACTIVE       16384   Local host
+   utun0        Tunnels      ACTIVE       1500    Tunnel (owner unknown)
+   utun1        Tunnels      ACTIVE       1380    Tunnel (owner unknown)
+   utun2        Tunnels      ACTIVE       2000    Tunnel (owner unknown)
+   utun3        Tunnels      ACTIVE       1000    Tunnel (owner unknown)
+   utun4        Tunnels      ACTIVE       1380    Tunnel (owner unknown)
+   utun5        Tunnels      ACTIVE       1380    Tunnel (owner unknown)
+   anpi0        System       IDLE         1500    System interface
+   bridge0      Bridges      IDLE         1500    Network bridge
+   en1          Network      IDLE         1500    Network adapter
+   en2          Network      IDLE         1500    Network adapter
+   gif0         System       DOWN         1280    System interface
+   nan0         System       DOWN         1500    System interface
+   stf0         System       DOWN         1280    System interface
+
+
+
+
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Ready. ? help, : command palette, / search
+/: search   : palette   j/k: move   Enter: detail   p: pause   ?: help   q: exit

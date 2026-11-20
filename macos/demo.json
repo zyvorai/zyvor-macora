@@ -1,0 +1,522 @@
+{
+  "schema_version": 1,
+  "interfaces": [
+    {
+      "name": "anpi0",
+      "label": "System interface",
+      "group": "System",
+      "up": true,
+      "active": false,
+      "mtu": 1500,
+      "mac": "02:00:00:00:01:01",
+      "status": "inactive",
+      "media": "none",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "awdl0",
+      "label": "Apple peer-to-peer",
+      "group": "System",
+      "up": true,
+      "active": true,
+      "mtu": 1500,
+      "mac": "02:00:00:00:03:01",
+      "status": "active",
+      "media": "autoselect",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::3858:fff:fecd:190%awdl0",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "bridge0",
+      "label": "Network bridge",
+      "group": "Bridges",
+      "up": true,
+      "active": false,
+      "mtu": 1500,
+      "mac": "02:00:00:00:02:01",
+      "status": "inactive",
+      "media": "<unknown type>",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [
+        "RXCSUM",
+        "TXCSUM",
+        "TSO4",
+        "TSO6",
+        "PERFORMNUD",
+        "DAD"
+      ],
+      "members": [
+        "en1",
+        "en2"
+      ],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "en0",
+      "label": "Wi-Fi",
+      "group": "Network",
+      "up": true,
+      "active": true,
+      "mtu": 1500,
+      "mac": "02:00:00:00:00:08",
+      "status": "active",
+      "media": "autoselect",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [
+        "TSO4",
+        "TSO6",
+        "CHANNEL_IO",
+        "PARTIAL_CSUM",
+        "ZEROINVERT_CSUM",
+        "PERFORMNUD",
+        "DAD"
+      ],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::61:d22d:5cdc:65ba%en0",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": [
+            "secured"
+          ]
+        },
+        {
+          "address": "2001:db8:1:1::10",
+          "prefix": 64,
+          "scope": "global-range",
+          "attributes": [
+            "secured",
+            "autoconf"
+          ]
+        },
+        {
+          "address": "2001:db8:1:1::11",
+          "prefix": 64,
+          "scope": "global-range",
+          "attributes": [
+            "autoconf",
+            "temporary",
+            "deprecated"
+          ]
+        },
+        {
+          "address": "192.168.1.8",
+          "prefix": 24,
+          "scope": "private",
+          "attributes": []
+        },
+        {
+          "address": "2001:db8:1:1::12",
+          "prefix": 64,
+          "scope": "global-range",
+          "attributes": [
+            "autoconf",
+            "temporary"
+          ]
+        }
+      ],
+      "counters": {
+        "rx_bytes": 268435456,
+        "tx_bytes": 33554432
+      }
+    },
+    {
+      "name": "en1",
+      "label": "Thunderbolt 1",
+      "group": "Network",
+      "up": true,
+      "active": false,
+      "mtu": 1500,
+      "mac": "02:00:00:00:02:01",
+      "status": "inactive",
+      "media": "autoselect <full-duplex>",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "PROMISC",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "en2",
+      "label": "Thunderbolt 2",
+      "group": "Network",
+      "up": true,
+      "active": false,
+      "mtu": 1500,
+      "mac": "02:00:00:00:02:02",
+      "status": "inactive",
+      "media": "autoselect <full-duplex>",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "PROMISC",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "gif0",
+      "label": "System interface",
+      "group": "System",
+      "up": false,
+      "active": false,
+      "mtu": 1280,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "POINTOPOINT",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "llw0",
+      "label": "Apple low-latency peer link",
+      "group": "System",
+      "up": true,
+      "active": true,
+      "mtu": 1500,
+      "mac": "02:00:00:00:03:01",
+      "status": null,
+      "media": "autoselect (none)",
+      "flags": [
+        "UP",
+        "BROADCAST",
+        "SMART",
+        "RUNNING",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::3858:fff:fecd:190%llw0",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "lo0",
+      "label": "Local host",
+      "group": "Loopback",
+      "up": true,
+      "active": true,
+      "mtu": 16384,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "LOOPBACK",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [
+        "RXCSUM",
+        "TXCSUM",
+        "TXSTATUS",
+        "SW_TIMESTAMP",
+        "PERFORMNUD",
+        "DAD"
+      ],
+      "members": [],
+      "addresses": [
+        {
+          "address": "127.0.0.1",
+          "prefix": 8,
+          "scope": "loopback",
+          "attributes": []
+        },
+        {
+          "address": "::1",
+          "prefix": 128,
+          "scope": "loopback",
+          "attributes": []
+        },
+        {
+          "address": "fe80::1%lo0",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "nan0",
+      "label": "System interface",
+      "group": "System",
+      "up": false,
+      "active": false,
+      "mtu": 1500,
+      "mac": "02:00:00:00:04:01",
+      "status": null,
+      "media": "autoselect (none)",
+      "flags": [
+        "BROADCAST",
+        "SMART",
+        "SIMPLEX",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "stf0",
+      "label": "System interface",
+      "group": "System",
+      "up": false,
+      "active": false,
+      "mtu": 1280,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        ""
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [],
+      "counters": null
+    },
+    {
+      "name": "utun0",
+      "label": "Tunnel (owner unknown)",
+      "group": "Tunnels",
+      "up": true,
+      "active": true,
+      "mtu": 1500,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "POINTOPOINT",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::cb1c:7585:fa5b:2cce%utun0",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "utun1",
+      "label": "Tunnel (owner unknown)",
+      "group": "Tunnels",
+      "up": true,
+      "active": true,
+      "mtu": 1380,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "POINTOPOINT",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::9da6:4d1a:4518:7587%utun1",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "utun2",
+      "label": "Tunnel (owner unknown)",
+      "group": "Tunnels",
+      "up": true,
+      "active": true,
+      "mtu": 2000,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "POINTOPOINT",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::a704:ce69:1ac0:9f34%utun2",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "utun3",
+      "label": "Tunnel (owner unknown)",
+      "group": "Tunnels",
+      "up": true,
+      "active": true,
+      "mtu": 1000,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "POINTOPOINT",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::ce81:b1c:bd2c:69e%utun3",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "utun4",
+      "label": "Tunnel (owner unknown)",
+      "group": "Tunnels",
+      "up": true,
+      "active": true,
+      "mtu": 1380,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "POINTOPOINT",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::ac33:3d86:1b5f:45c7%utun4",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    },
+    {
+      "name": "utun5",
+      "label": "Tunnel (owner unknown)",
+      "group": "Tunnels",
+      "up": true,
+      "active": true,
+      "mtu": 1380,
+      "mac": null,
+      "status": null,
+      "media": null,
+      "flags": [
+        "UP",
+        "POINTOPOINT",
+        "RUNNING",
+        "MULTICAST"
+      ],
+      "options": [],
+      "members": [],
+      "addresses": [
+        {
+          "address": "fe80::565e:404f:8ba0:d28d%utun5",
+          "prefix": 64,
+          "scope": "link-local",
+          "attributes": []
+        }
+      ],
+      "counters": null
+    }
+  ],
+  "warnings": [
+    "DEMO DATA: documentation addresses and static counters. Not live telemetry."
+  ]
+}

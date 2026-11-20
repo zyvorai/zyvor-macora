@@ -1,0 +1,28 @@
+MACORA 0.2.0 — source package validation
+
+Environment: Linux container, Rust 1.75, no macOS SDK or Wi-Fi hardware.
+
+PASS cargo test --offline --locked: 40 tests (3 parser + 18 prior scenarios +
+     19 new interactive/TUI/report scenarios).
+PASS 4 Python standard-library pseudo-terminal tests: q and Ctrl-C restore
+     original tty state; narrow terminal; arrow/palette/pause/manual refresh.
+PASS cargo fmt --check.
+PASS cargo clippy --all-targets --offline --locked -- -D warnings.
+PASS cargo build --release --offline --locked (Linux validation binary only).
+PASS Swift grammar parse: 16 source/manifest/test files (syntax only).
+PASS bundled JSON model/Info.plist contract checks.
+PASS bash syntax for native app build script.
+PASS git apply --check for the included 0.1.0 → 0.2.0 upgrade patch.
+PASS light/dark native design illustrations visually inspected.
+PASS actual Rust TUI rendering against the sanitized fixture inspected.
+
+NOT RUN: Swift SDK type checking; the 19 native unit-test methods; macOS
+app build/sign/launch; menu bar/window lifecycle; Location permission;
+CoreWLAN scan/join; macOS authorization; actual network settings mutations;
+GitHub Actions; Apple Silicon/Intel hardware acceptance; notarization.
+
+Native design PNGs are illustrations with simulated values, not app screenshots.
+The terminal PNG renders actual Rust output from the sanitized offline fixture.
+
+No prebuilt macOS application or DMG is included. Build on a Mac with:
+./scripts/build-macos.sh

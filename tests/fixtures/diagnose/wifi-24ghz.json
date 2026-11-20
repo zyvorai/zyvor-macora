@@ -1,0 +1,26 @@
+{
+  "SPAirPortDataType" : [
+    {
+      "spairport_airport_interfaces" : [
+        {
+          "_name" : "en0",
+          "spairport_status_information" : "spairport_status_connected",
+          "spairport_current_network_information" : {
+            "_name" : "ExampleNet",
+            "spairport_network_channel" : "6 (2GHz, 20MHz)",
+            "spairport_network_mcs" : 3,
+            "spairport_network_phymode" : "802.11n",
+            "spairport_network_rate" : 72,
+            "spairport_signal_noise" : "-82 dBm / -90 dBm"
+          },
+          "spairport_supported_channels" : [ "1", "6", "36", "40" ]
+        },
+        {
+          "_name" : "awdl0",
+          "spairport_status_information" : "spairport_status_connected"
+        }
+      ],
+      "spairport_software_information" : "Version 27.2"
+    }
+  ]
+}

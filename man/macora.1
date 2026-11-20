@@ -1,0 +1,94 @@
+.TH MACORA 1 "October 2026" "macora 0.5.1" "User Commands"
+.SH NAME
+macora \- explainable network cockpit for macOS
+.SH SYNOPSIS
+.B macora
+[\fIINTERFACE\fR | \fICOMMAND\fR] [\fIWORDS\fR]
+.SH DESCRIPTION
+Shows grouped, explained network interfaces and read-only diagnostics. Nothing changes system settings unless
+.B set
+is run with
+.BR \-\-apply .
+.SH COMMANDS
+.TP
+.B show
+Grouped interfaces (default).
+.TP
+.B explain \fIIFACE\fR
+Explain flags, IPv6 and interface role.
+.TP
+.B diagnose
+Walk link, router, internet, sign-in page, DNS, HTTPS, path MTU, Wi-Fi and IPv6 and print a verdict with what to try. Sends a few packets. Words: \fBto\fR \fIHOST\fR (check a site), \fBquick\fR, \fBspeed\fR, \fBstrict\fR, \fBredact\fR, \fBmd\fR|\fBhtml\fR|\fBjson\fR, \fBcount\fR \fIN\fR \fBinterval\fR \fIS\fR. See docs/DIAGNOSE.md.
+.TP
+.B ping \fIHOST\fR, trace \fIHOST\fR
+Packet loss/latency and hop path.
+.TP
+.B doctor, topology, report, routes, path, dns, services, wifi, neighbors, sockets
+Local inspection views.
+.TP
+.B watch
+Live counters and rates; add \fBprometheus\fR for scrape-ready text.
+.TP
+.B snapshot \fIFILE\fR, diff \fIA\fR \fIB\fR
+Save (mode 0600, never overwrite) and compare captures.
+.TP
+.B tui, interactive
+Full-screen dashboard and REPL.
+.TP
+.B completions \fISHELL\fR
+Print bash, zsh or fish completions.
+.SH WORDS
+Options are plain words after a command or interface, as in
+.BR "macora en0 raw" .
+.TP
+.B all
+Include tunnels, Apple system links and loopback.
+.TP
+.B up, down
+Only interfaces that are up, or down.
+.TP
+.B list
+Interface names only, in system order, like \fBifconfig -l\fR.
+.TP
+.B raw
+The original ifconfig text for the selected interfaces.
+.TP
+.B json, redact, compact, ipv4, ipv6
+Machine-readable output; mask IP and MAC values; less detail; one address family.
+.TP
+.B html, md, prometheus
+Output format for report, show and watch.
+.TP
+.B from \fIFILE\fR
+Inspect a saved ifconfig capture offline.
+.TP
+.B interface \fINAME\fR, group \fINAME\fR
+Select an interface or group.
+.TP
+.B count \fIN\fR, interval \fISECONDS\fR, timeout \fIMS\fR
+Watch frames, watch interval, probe timeout.
+.TP
+.B theme \fINAME\fR, color \fIMODE\fR
+TUI palette (default, mono, high-contrast); auto, always or never.
+.TP
+.B apply
+Execute a previewed change.
+.SH EXAMPLES
+.nf
+macora
+macora en0
+macora en0 raw
+macora list up
+macora en0 mtu 1400          # preview only
+macora diagnose
+macora report html redact > report.html
+macora watch count 5 json
+.fi
+.SH ENVIRONMENT
+.TP
+.B NO_COLOR
+Disable color output.
+.SH EXIT STATUS
+0 on success; 1 on error or when diagnose finds a failing layer.
+.SH AUTHORS
+Zyvor AI Labs. Zyvor Production License v1.0.

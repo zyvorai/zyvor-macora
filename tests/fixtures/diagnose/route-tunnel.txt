@@ -1,0 +1,7 @@
+   route to: default
+destination: default
+       mask: default
+  interface: utun4
+      flags: <UP,DONE,STATIC,GLOBAL>
+ recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire
+       0         0         0         0         0         0      1380         0 

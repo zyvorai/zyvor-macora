@@ -1,0 +1,4 @@
+PING6(56=40+8+8 bytes) 2001:db8::2 --> 2001:db8::1111
+--- 2001:db8::1111 ping6 statistics ---
+3 packets transmitted, 3 packets received, 0.0% packet loss
+round-trip min/avg/max/std-dev = 8.551/9.053/9.755/0.511 ms

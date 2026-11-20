@@ -1,0 +1,9 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 39773
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; Query time: 18 msec
+;; SERVER: 192.0.2.1#53(192.0.2.1)
+;; WHEN: Sun Oct 18 00:00:00 IST 2026
+;; MSG SIZE  rcvd: 56
+
