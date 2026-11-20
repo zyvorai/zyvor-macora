@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Explicit active checks: ping and traceroute (the `diagnose` walkthrough lives in `crate::diagnose`).
 //! Every function here only runs when the user asks for it; nothing is sent in the background.
 use crate::{collect, model::json_string};

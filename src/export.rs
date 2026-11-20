@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Output formats beyond text/JSON: standalone HTML report, Prometheus text, shell completions.
 use crate::{insight, model::Snapshot, view};
 use std::collections::BTreeMap;

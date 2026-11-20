@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! The command line around `diagnose`: argument validation (no network needed), the words, the help
 //! text, completions, and the real TCP prober against sockets we control.
 use std::{

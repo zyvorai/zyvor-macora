@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 """Optional Pillow documentation renderer. Native previews are illustrations,
 not SwiftUI screenshots. tui-preview renders actual Rust-renderer fixture output.
 Runtime app and build do not depend on this script or Pillow.

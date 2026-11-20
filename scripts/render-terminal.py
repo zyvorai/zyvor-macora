@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 """Render real `macora` terminal output into README images: PNG screenshots and a typing GIF.
 
 Runs the commands against the live Mac with `redact` so no real addresses end up in the repo.

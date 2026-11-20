@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 set -euo pipefail
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo 'Macora.app must be built on macOS with Xcode command line tools.' >&2

@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 # Capture documentation screenshots of the app running on its built-in simulated data.
 # Usage: scripts/shots.sh   (macOS, needs Screen Recording permission for the terminal)
 set -euo pipefail

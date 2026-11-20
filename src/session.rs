@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! A persistent, shell-free exploration session. Inputs are parsed as arguments,
 //! not shell programs. Settings only create a pending plan until explicit apply.
 use crate::{

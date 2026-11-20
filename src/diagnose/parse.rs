@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Pure parsers for the output of the tools `diagnose` runs. None of them does I/O and none of
 //! them panics: unrecognised or truncated text yields `None` / an empty result.
 use super::facts::{Http, Proxy, Route, Speed, Wifi};

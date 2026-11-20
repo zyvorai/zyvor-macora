@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Turns [`Facts`] into steps, a verdict and next steps. Pure: no I/O, so every scenario is a test.
 //!
 //! The verdict follows the layers from the bottom up: a sign-in page, then link, router, internet,

@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 # Mirror the wiki/ folder into the GitHub wiki (zyvorai/zyvor-macora.wiki). The repo is the source of truth.
 # Usage: scripts/sync-wiki.sh   (needs push access; the wiki must have at least one page created in the browser)
 set -euo pipefail

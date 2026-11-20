@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Render the real TUI against the sanitized fixture for documentation.
 fn main() {
     let capture = include_str!("../tests/fixtures/macos.ifconfig");

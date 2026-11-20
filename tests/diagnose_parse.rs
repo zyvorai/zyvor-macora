@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Parsers, the JSON reader and the path-MTU search: pure code, tested against recorded tool output
 //! (sanitized, documentation-range addresses) and by brute force.
 use std::sync::atomic::{AtomicU32, Ordering};

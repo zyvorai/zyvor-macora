@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 use std::{collections::BTreeMap, process::Command};
 use zyvor_macora::{export, parse, probe, tui};
 const MAC: &str = include_str!("fixtures/macos.ifconfig");
