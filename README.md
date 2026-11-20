@@ -260,7 +260,7 @@ Notarized CI releases (today they are notarized by hand) · per-process bandwidt
 
 ## Support
 
-Free under Apache-2.0. If it helps you, you can pay any amount you like, from ₹1 up. Suggested: ₹999 (about US$10), ₹2,999 (about US$30) or **₹9,999 (about US$100)**: by UPI, card or netbanking at <https://rzp.io/rzp/utwdYh3> (Razorpay; international cards work too). A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+Free under Apache-2.0. If it helps you, you can pay any amount you like, from INR 1 up. Suggested: INR 999 (about US$10), INR 2,999 (about US$30) or **INR 9,999 (about US$100)**: by UPI, card or netbanking at <https://rzp.io/rzp/utwdYh3> (Razorpay; international cards work too). A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 ## License
 
