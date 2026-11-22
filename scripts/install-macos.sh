@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 # Install the macora CLI (and man page + completions) from a source checkout. Does not need sudo with PREFIX set.
 # Usage: scripts/install-macos.sh [PREFIX]   (default /usr/local)

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 # Build release artifacts into release/: CLI tarball, Macora.app DMG and pkg, with .sha256 files.
 # Usage: scripts/package-mac.sh VERSION

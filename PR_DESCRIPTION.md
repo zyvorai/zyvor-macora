@@ -4,7 +4,7 @@ MACORA 0.2 adds a persistent Rust REPL and a full-screen terminal dashboard, and
 
 The REPL holds one exploration context and exposes read-only commands alongside deliberate interface plan/cancel/apply. Offline sessions cannot apply settings, command history cannot authorize apply, and live mutation requires an exact command confirmation on a terminal. The TUI itself remains read-only and restores tty state on normal exit, handled Ctrl-C/Ctrl-D and Rust unwinding.
 
-All new source remains under the Zyvor Production License v1.0. Nuvora and GuestKit were inspected as design/interaction references through GitHub; no Nuvora code or assets are incorporated.
+All new source remains under the Zyvor Production Licence v2.0. Nuvora and GuestKit were inspected as design/interaction references through GitHub; no Nuvora code or assets are incorporated.
 
 Validation executed in Linux: 40 Rust tests, four real pseudo-terminal tests, Rustfmt, Clippy with warnings denied, offline release compilation, Swift syntax parsing across 16 files, JSON/plist contract checks and design preview inspection. The 19 Swift test methods are included but native SDK compilation, Swift test execution, CoreWLAN, menu bar/window interaction, administrator authorization and actual network mutations still need a Mac run. GitHub Actions supplies that build path but has not been run from this source package.
 

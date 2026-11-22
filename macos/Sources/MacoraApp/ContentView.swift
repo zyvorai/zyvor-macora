@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 import SwiftUI
 import Charts
@@ -113,7 +113,7 @@ private enum Page: String, CaseIterable, Identifiable {
                     Circle().fill(store.error != nil ? .orange : store.paused ? .gray : .green).frame(width: 6, height: 6)
                     Text(store.demo ? "DEMO" : store.paused ? "PAUSED" : "LIVE").font(.system(size: 9, weight: .bold)).padding(.horizontal, 6).padding(.vertical, 2).background((store.demo ? Color.orange : store.paused ? Color.gray : Color.green).opacity(0.18), in: Capsule())
                     if let date = store.lastUpdated { Text("· Updated \(date.formatted(date: .omitted, time: .standard))") }
-                    Spacer(); Text("macOS native · Zyvor Production License" + (maskAddresses ? " · IP/MAC masked" : ""))
+                    Spacer(); Text("macOS native · Zyvor Production Licence v2.0" + (maskAddresses ? " · IP/MAC masked" : ""))
                 }.font(.system(size: 10)).foregroundStyle(.secondary).padding(.horizontal, 26).padding(.vertical, 10)
             }
         }

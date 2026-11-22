@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! A small JSON reader (RFC 8259) so tool output such as `system_profiler -json` and
 //! `networkQuality -c` can be read without external crates. It never panics: malformed,

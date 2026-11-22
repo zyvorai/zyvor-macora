@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! Runs the probes and fills in [`Facts`]. All process and socket access goes through [`Runner`], so
 //! tests can replay recorded tool output. Independent latency probes run in parallel threads; the

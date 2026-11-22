@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 """Exercise the actual TUI in a disposable pseudo-terminal, including tty cleanup.
 Python standard library only. Works on macOS/Linux; no network or mutations.

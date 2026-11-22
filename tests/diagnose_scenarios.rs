@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! Scenario tests for `diagnose`. Each starts from `Facts::healthy_example()` and breaks one thing, then
 //! asserts every step's status, the verdict and the advice. The last section replays the real collector
