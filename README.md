@@ -6,13 +6,13 @@
 
 ### Your Mac's network, made clear.
 
-A native SwiftUI app, a Rust CLI and a terminal workspace that explain what your network is doing, and why it feels slow. Read-only by default. Source-available: a commercial license is required to run it under the Zyvor Production License v1.0.
+A native SwiftUI app, a Rust CLI and a terminal workspace that explain what your network is doing, and why it feels slow. Read-only by default. Source-available: a commercial license is required to run it under the Zyvor Production Licence v2.0.
 
 <br />
 
 **[Download Macora 0.5.0](https://github.com/zyvorai/zyvor-macora/releases/tag/v0.5.0)** &nbsp;·&nbsp; [Website](https://zyvorai.github.io/zyvor-macora/) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Client overview (PDF)](docs/MACORA-Client-Overview.pdf)
 
-`Macora-0.5.0.dmg` · macOS 14 or later · Apple silicon · Developer ID signed and notarized · Zyvor Production License
+`Macora-0.5.0.dmg` · macOS 14 or later · Apple silicon · Developer ID signed and notarized · Zyvor Production Licence v2.0
 
 [![verify](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml/badge.svg)](https://github.com/zyvorai/zyvor-macora/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Zyvor%20Production%201.0-0071e3)](LICENSE)
@@ -260,11 +260,11 @@ Notarized CI releases (today they are notarized by hand) · per-process bandwidt
 
 ## Support
 
-A commercial license is required under the Zyvor Production License v1.0 (sales@zyvor.dev). Separately, if it helps you, you can donate any amount you like, from INR 1 up. Suggested: INR 999 (about US$10), INR 2,999 (about US$30) or **INR 9,999 (about US$100)**: by UPI, card or netbanking at <https://rzp.io/rzp/utwdYh3> (Razorpay; international cards work too). A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+A commercial license is required under the Zyvor Production Licence v2.0 (sales@zyvor.dev). Separately, if it helps you, you can donate any amount you like, from INR 1 up. Suggested: INR 999 (about US$10), INR 2,999 (about US$30) or **INR 9,999 (about US$100)**: by UPI, card or netbanking at <https://rzp.io/rzp/utwdYh3> (Razorpay; international cards work too). A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Support contracts are separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 ## License
 
-Copyright 2026 Zyvor AI Labs. Licensed under the **[Zyvor Production License v1.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-1.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-1.0.txt)), including the Rust CLI and Swift application. See [NOTICE](NOTICE).
+Copyright 2026 Zyvor AI Labs. Licensed under the **[Zyvor Production Licence v2.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-2.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-2.0.txt)), including the Rust CLI and Swift application. See [NOTICE](NOTICE).
 
-- **Free** for evaluation, development, testing, research, education and all other non-production use.
-- **Production use needs a commercial license** from Zyvor AI Labs Private Limited; a 30-day trial key is available for production evaluation. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). The design takes broad inspiration from Zyvor Vytrix's sidebar/card layout; this is new source code, not a fork, and shares no code or assets.
+- A 30-day trial is available on request from sales@zyvor.dev (a paid evaluation Order at no charge); production and any other use needs a paid Order under the Zyvor Production Licence v2.0.
+- **Production use needs a paid Order** from Zyvor AI Labs Private Limited. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). The design takes broad inspiration from Zyvor Vytrix's sidebar/card layout; this is new source code, not a fork, and shares no code or assets.

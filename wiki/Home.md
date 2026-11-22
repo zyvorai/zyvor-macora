@@ -16,4 +16,4 @@
 | [[FAQ]] | Privacy, what is sent, what is not supported |
 | [[Contributing and Releases]] | Tests, verification scripts, the release checklist |
 
-Source: <https://github.com/zyvorai/zyvor-macora> · Site: <https://zyvorai.github.io/zyvor-macora/> · License: Zyvor Production License v1.0
+Source: <https://github.com/zyvorai/zyvor-macora> · Site: <https://zyvorai.github.io/zyvor-macora/> · License: Zyvor Production Licence v2.0

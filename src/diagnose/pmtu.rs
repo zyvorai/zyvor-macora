@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! Path-MTU discovery. `works(size)` answers "does a do-not-fragment packet of `size` bytes (headers
 //! included) reach the target?". Candidate sizes are tested in parallel rounds, so a lost probe costs

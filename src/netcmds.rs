@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! Commands built on fixed macOS tools: Wi-Fi scan, per-app traffic, LAN discovery, hop statistics,
 //! DNS comparison, firewall status and an iperf3 wrapper. Parsers are pure so they can be tested on
