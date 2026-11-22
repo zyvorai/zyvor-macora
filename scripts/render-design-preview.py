@@ -21,7 +21,7 @@ def render(dark):
  def line(x1,y1,x2,y2,c=None):d.line((x1*S,y1*S,x2*S,y2*S),fill=c or p['line'],width=S)
  def dot(x,y,c,r=4):d.ellipse(((x-r)*S,(y-r)*S,(x+r)*S,(y+r)*S),fill=c)
  text(38,23,'MACORA 0.2',25,b=True)
- text(280,36,'RUST + NATIVE SWIFTUI  /  MAC ONLY  /  ZYVOR PRODUCTION LICENSE',10,c=p['muted'])
+ text(280,36,'RUST + NATIVE SWIFTUI  /  MAC ONLY  /  ZYVOR PRODUCTION LICENCE V2.0',10,c=p['muted'])
  rr((1195,25,1560,57),p['surface'],16,outline=p['line']);text(1212,35,'DESIGN ILLUSTRATION · SIMULATED VALUES',10,c=p['muted'])
  rr((30,88,1570,1160),p['page'],24,outline=p['line'])
  rr((31,89,258,1159),p['side'],24);d.rectangle((235*S,89*S,258*S,1159*S),fill=p['side']);line(258,89,258,1159)
